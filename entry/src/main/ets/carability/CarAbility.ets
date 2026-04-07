@@ -1,12 +1,11 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 
 const DOMAIN = 0x0000;
 
-export default class EntryAbility extends UIAbility {
+export default class CarAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
   }
 
@@ -15,7 +14,10 @@ export default class EntryAbility extends UIAbility {
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
-    await windowStage.loadContent('pages/EntryPage');
+    // Main window is created, set main page for this ability
+    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+
+    await windowStage.loadContent('pages/CarPage');
     AppStorage.setOrCreate("ability", this)
   }
 

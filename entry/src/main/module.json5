@@ -13,6 +13,17 @@
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.ACCESS_CAR_DISTRIBUTED_ENGINE"
+      },
+      {
+        "name": "ohos.permission.ACCESS_SERVICE_NAVIGATION_INFO"
+      },
+      {
+        "name": "ohos.permission.USE_FLOAT_BALL"
+      }
+    ],
     "abilities": [
       {
         "name": "EntryAbility",
@@ -32,6 +43,19 @@
               "action.system.home"
             ]
           }
+        ]
+      },
+      {
+        "name": "CarAbility",
+        "srcEntry": "./ets/carability/CarAbility.ets",
+        "description": "$string:CarAbility_desc",
+        "icon": "$media:layered_image",
+        "label": "$string:CarAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "supportWindowMode": [
+          "floating",
+          "fullscreen"
         ]
       }
     ],

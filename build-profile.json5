@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B1A9027BCDDAFE64282053B67B64706FD166367C50886FD3144D0C7E60A2571FC09CD8050AE35C2",
+          "profile": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.p12",
+          "storePassword": "0000001B394E9D01556AB2B8B8D7581744401B261CB5C032E66479AD3DCDF529C326395BBD591F2F4D7A43"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
