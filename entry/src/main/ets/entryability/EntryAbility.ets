@@ -6,7 +6,6 @@ const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
   }
 
@@ -15,8 +14,10 @@ export default class EntryAbility extends UIAbility {
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
-    await windowStage.loadContent('pages/EntryPage');
-    AppStorage.setOrCreate("ability", this)
+    // await windowStage.loadContent('pages/EntryPage');
+    windowStage.loadContent('pages/AppPage').catch(() => {
+    })
+    // AppStorage.setOrCreate("entryAbility", this)
   }
 
   onWindowStageDestroy(): void {

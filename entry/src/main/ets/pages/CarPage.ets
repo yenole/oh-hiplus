@@ -18,6 +18,7 @@ struct CarPage {
           middle: { anchor: '__container__', align: HorizontalAlign.Center }
         })
         .onClick(async () => {
+          console.log('->float is click');
           if (this.floatintBallCtrl != null) {
             return;
           }

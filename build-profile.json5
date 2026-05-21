@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B1A9027BCDDAFE64282053B67B64706FD166367C50886FD3144D0C7E60A2571FC09CD8050AE35C2",
-          "profile": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.p7b",
+          "storeFile": "/Users/yenole/coding/ws-hisk/oh-hiplus/signatures/dev.p12",
+          "storePassword": "0000001B24E403FD26091863A426281BF1593664991889E6B6EEF520E515B52E0EDC21944CD32CE83534F2",
+          "keyAlias": "yoruno",
+          "keyPassword": "0000001B2D8060E1C4FA8E0461430B195B949DA21D8568775F11F6517A208178219D25B21851D89378ABA3",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\Yoruno\\.ohos\\config\\default_ha-hisk_sH2c7ytm6uAoyaCFY-yB7tlZ2VMc4IWWLdhRsbTl1JE=.p12",
-          "storePassword": "0000001B394E9D01556AB2B8B8D7581744401B261CB5C032E66479AD3DCDF529C326395BBD591F2F4D7A43"
+          "profile": "/Users/yenole/coding/ws-hisk/oh-hiplus/signatures/devDebug.p7b",
+          "certpath": "/Users/yenole/coding/ws-hisk/oh-hiplus/signatures/dev.cer"
         }
       }
     ],
@@ -19,8 +19,8 @@
       {
         "name": "default",
         "signingConfig": "default",
-        "targetSdkVersion": "5.0.5(17)",
-        "compatibleSdkVersion": "5.0.5(17)",
+        "targetSdkVersion": "6.0.2(22)",
+        "compatibleSdkVersion": "6.0.2(22)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
