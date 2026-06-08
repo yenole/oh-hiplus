@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="383" viewBox="0 0 900 383">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.55" stop-color="#0b2a3d"/>
+      <stop offset="1" stop-color="#063b45"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="74%" cy="36%" r="58%">
+      <stop offset="0" stop-color="#28e6ff" stop-opacity="0.45"/>
+      <stop offset="0.48" stop-color="#00b7ff" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#00b7ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#152538"/>
+      <stop offset="1" stop-color="#071421"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <style>
+      .font{font-family:'Hiragino Sans GB','Heiti SC','PingFang SC','Microsoft YaHei',sans-serif;}
+      .title{font-size:52px;font-weight:800;letter-spacing:1px;fill:#ffffff;}
+      .sub{font-size:24px;font-weight:600;fill:#bff7ff;}
+      .tag{font-size:19px;font-weight:700;fill:#062030;}
+      .small{font-size:18px;font-weight:700;fill:#d6faff;}
+      .mini{font-size:16px;font-weight:500;fill:#7fefff;}
+      .screenTitle{font-size:22px;font-weight:800;fill:#06101b;}
+      .screenText{font-size:15px;font-weight:700;fill:#d6faff;}
+    </style>
+  </defs>
+
+  <rect width="900" height="383" fill="url(#bg)"/>
+  <rect width="900" height="383" fill="url(#glow)"/>
+  <circle cx="710" cy="45" r="120" fill="#0fd6ff" opacity="0.16" filter="url(#soft)"/>
+  <circle cx="790" cy="312" r="150" fill="#21ffbd" opacity="0.10" filter="url(#soft)"/>
+
+  <g opacity="0.25" stroke="#51e8ff" stroke-width="1.5" fill="none">
+    <path d="M45 65 H150 Q170 65 170 85 V122"/>
+    <path d="M756 68 H850"/>
+    <path d="M786 68 V122 H872"/>
+    <path d="M520 340 H635 Q652 340 652 318 V300"/>
+    <circle cx="170" cy="122" r="4" fill="#51e8ff"/>
+    <circle cx="756" cy="68" r="4" fill="#51e8ff"/>
+    <circle cx="652" cy="300" r="4" fill="#51e8ff"/>
+  </g>
+
+  <g class="font">
+    <rect x="48" y="38" width="126" height="34" rx="17" fill="#39f7c9"/>
+    <text x="111" y="61" class="tag" text-anchor="middle">Hi时刻教程</text>
+
+    <text x="48" y="130" class="title">Hi时刻和 HiCar</text>
+    <text x="48" y="194" class="title">模式怎么选？</text>
+    <text x="50" y="236" class="sub">自定义车机桌面 vs HiCar 拓展</text>
+
+    <g transform="translate(50 267)">
+      <rect x="0" y="0" width="118" height="34" rx="17" fill="#123047" stroke="#37dfff" opacity="0.95"/>
+      <text x="59" y="23" class="small" text-anchor="middle">Shizuku</text>
+      <rect x="132" y="0" width="118" height="34" rx="17" fill="#123047" stroke="#37dfff" opacity="0.95"/>
+      <text x="191" y="23" class="small" text-anchor="middle">HiCar通道</text>
+      <rect x="264" y="0" width="118" height="34" rx="17" fill="#123047" stroke="#37dfff" opacity="0.95"/>
+      <text x="323" y="23" class="small" text-anchor="middle">小窗应用</text>
+    </g>
+
+    <text x="50" y="350" class="mini">Dock栏 / 应用通知 / 音乐卡片 · 新用户看这一篇</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="548" y="90" width="276" height="190" rx="26" fill="#020813" stroke="#1fb9d5" stroke-width="3"/>
+    <rect x="566" y="110" width="240" height="150" rx="17" fill="url(#card)" stroke="#1a5e73"/>
+
+    <rect x="585" y="130" width="90" height="42" rx="11" fill="#0ed3ff" opacity="0.95"/>
+    <text x="630" y="158" class="font screenTitle" text-anchor="middle">Hi时刻</text>
+
+    <rect x="696" y="130" width="90" height="42" rx="11" fill="#39f7c9" opacity="0.95"/>
+    <text x="741" y="158" class="font screenTitle" text-anchor="middle">HiCar</text>
+
+    <path d="M681 151 H691" stroke="#7fefff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M685 146 L691 151 L685 156" fill="none" stroke="#7fefff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g transform="translate(586 194)">
+      <rect x="0" y="0" width="52" height="42" rx="10" fill="#183f59" stroke="#31e7ff"/>
+      <text x="26" y="27" class="font screenText" text-anchor="middle">Dock</text>
+      <rect x="66" y="0" width="52" height="42" rx="10" fill="#183f59" stroke="#31e7ff"/>
+      <text x="92" y="27" class="font screenText" text-anchor="middle">通知</text>
+      <rect x="132" y="0" width="52" height="42" rx="10" fill="#183f59" stroke="#31e7ff"/>
+      <text x="158" y="27" class="font screenText" text-anchor="middle">音乐</text>
+      <rect x="198" y="0" width="38" height="42" rx="10" fill="#183f59" stroke="#31e7ff"/>
+      <text x="217" y="27" class="font screenText" text-anchor="middle">窗</text>
+    </g>
+  </g>
+
+  <g opacity="0.9">
+    <path d="M832 105 l18 10 -18 10 -18 -10z" fill="#39f7c9" opacity="0.75"/>
+    <path d="M832 126 l18 10 -18 10 -18 -10z" fill="#0ed3ff" opacity="0.65"/>
+  </g>
+</svg>
