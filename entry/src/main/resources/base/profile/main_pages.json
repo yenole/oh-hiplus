@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/EntryPage",
+    "pages/HomePage",
     "pages/CarPage",
     "pages/AppPage",
     "pages/HdcPage"

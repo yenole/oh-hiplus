@@ -15,8 +15,13 @@ export default class EntryAbility extends UIAbility {
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // await windowStage.loadContent('pages/EntryPage');
-    windowStage.loadContent('pages/AppPage').catch(() => {
+    windowStage.loadContent('pages/HomePage').catch(() => {
     })
+    try {
+      windowStage.getMainWindowSync().setWindowBackgroundColor('rgba(241, 243, 245, 0.88)')
+    } catch (error) {
+    }
+
     // AppStorage.setOrCreate("entryAbility", this)
   }
 
