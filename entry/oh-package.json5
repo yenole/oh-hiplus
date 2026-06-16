@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libhdc.so": "file:/libs"
+    "libohos.so": "file:./libs"
   }
 }
 
