@@ -1,9 +1,8 @@
 {
   "src": [
-    "pages/EntryPage",
     "pages/HomePage",
-    "pages/CarPage",
-    "pages/AppPage",
-    "pages/HdcPage"
+    "pages/Index",
+    "window/FloatWindow",
+    "pages/AppWindowContent"
   ]
 }

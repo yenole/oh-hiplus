@@ -19,6 +19,14 @@
     {
       "name": "CarAbility_label",
       "value": "CarMate"
+    },
+    {
+      "name": "LauncherAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "LauncherAbility_label",
+      "value": "label"
     }
   ]
 }
