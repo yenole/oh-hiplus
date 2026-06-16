@@ -1,5 +1,5 @@
 {
-  "name": "libhdc",
+  "name": "libohos.so",
   "version": "1.0.0",
-  "main": "libhdc.so"
+  "main": "index.d.ets"
 }
