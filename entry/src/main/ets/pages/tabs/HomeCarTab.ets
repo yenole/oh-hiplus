@@ -73,7 +73,7 @@ export struct HomeCarTab {
   }
 
   private startLauncherAbility(): void {
-return
+// return
     let awareness = smartMobilityCommon.getSmartMobilityAwareness();
     let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
     if (status.status == 0) {
