@@ -7,17 +7,26 @@ import { HomeProfileTab } from './tabs/HomeProfileTab';
 struct HomePage {
   @State isCasting: boolean = false;
   @State selectedTab: number = 0;
+  private swiperController: SwiperController = new SwiperController();
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       Column() {
         this.TopBar()
 
-        Stack() {
-          this.TabContent()
+        Swiper(this.swiperController) {
+          this.TabContent(0)
+          this.TabContent(1)
+          this.TabContent(2)
         }
         .layoutWeight(1)
         .width('100%')
+        .index(this.selectedTab)
+        .loop(false)
+        .duration(300)
+        .onChange((index: number) => {
+          this.selectedTab = index;
+        })
       }
       .height('100%')
       .width('100%')
@@ -29,12 +38,12 @@ struct HomePage {
   }
 
   @Builder
-  private TabContent() {
-    if (this.selectedTab === 0) {
+  private TabContent(index: number) {
+    if (index === 0) {
       HomeCarTab({ isCasting: $isCasting })
         .height('100%')
         .width('100%')
-    } else if (this.selectedTab === 1) {
+    } else if (index === 1) {
       HomeAppsTab()
         .height('100%')
         .width('100%')
