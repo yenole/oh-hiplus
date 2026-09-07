@@ -142,8 +142,10 @@ export struct HomeAppsTab {
       return;
     }
 
-    // 尝试从缓存加载
-    const cachedApps = await this.loadFromCache();
+    // 关闭自动刷新时优先使用缓存，否则进入应用页时获取最新列表
+    const appPreferences = await preferences.getPreferences(getContext(this), 'app_preferences');
+    const autoRefresh = await appPreferences.get('auto_refresh_apps', true) as boolean;
+    const cachedApps = autoRefresh ? null : await this.loadFromCache();
     let apps: HapApp[];
     
     if (cachedApps) {
