@@ -25,6 +25,9 @@
       },
       {
         "name": "ohos.permission.ACCESS_VIRTUAL_SCREEN"
+//      },
+//      {
+//        "name": "ohos.permission.SUBSCRIBE_NOTIFICATION"
       }
     ],
     "abilities": [
