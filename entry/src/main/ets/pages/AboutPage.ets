@@ -1,10 +1,17 @@
 import { pasteboard } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
+import { bundleManager } from '@kit.AbilityKit';
 import router from '@ohos.router';
 
 @Entry
 @Component
 export struct AboutPage {
+  @State versionName: string = '读取中...';
+
+  aboutToAppear() {
+    this.loadVersion();
+  }
+
   build() {
     Column() {
       this.Header()
@@ -156,7 +163,7 @@ export struct AboutPage {
   @Builder
   private InfoCard() {
     Column() {
-      this.InfoRow('版本', '1.0.0')
+      this.InfoRow('版本', this.versionName)
       Divider()
         .strokeWidth(1)
         .color('#EEEAE8')
@@ -194,5 +201,17 @@ export struct AboutPage {
     const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, 'Hi时刻');
     pasteboard.getSystemPasteboard().setData(pasteData);
     promptAction.showToast({ message: '公众号名称已复制', duration: 2000 });
+  }
+
+  private loadVersion() {
+    try {
+      const bundleInfo = bundleManager.getBundleInfoForSelfSync(
+        bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION
+      );
+      this.versionName = bundleInfo.versionName || '未知';
+    } catch (error) {
+      console.error('读取应用版本失败', error);
+      this.versionName = '未知';
+    }
   }
 }
