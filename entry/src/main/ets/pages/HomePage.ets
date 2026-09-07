@@ -23,6 +23,7 @@ struct HomePage {
         .width('100%')
         .index(this.selectedTab)
         .loop(false)
+        .indicator(false)
         .duration(300)
         .onChange((index: number) => {
           this.selectedTab = index;
@@ -154,6 +155,7 @@ struct HomePage {
     .height(60)
     .onClick(() => {
       this.selectedTab = index;
+      this.swiperController.changeIndex(index);
     })
   }
 }
