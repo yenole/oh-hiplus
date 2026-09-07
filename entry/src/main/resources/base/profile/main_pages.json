@@ -1,6 +1,10 @@
 {
   "src": [
     "pages/HomePage",
+    "pages/SystemSettingsPage",
+    "pages/AboutPage",
+    "pages/FeedbackPage",
+    "pages/CastingSettingsPage",
     "pages/Index",
     "window/FloatWindow",
     "pages/AppWindowContent"

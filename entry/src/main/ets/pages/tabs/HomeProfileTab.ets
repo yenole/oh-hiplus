@@ -3,6 +3,7 @@ import { pasteboard } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import preferences from '@ohos.data.preferences';
 import { common } from '@kit.AbilityKit';
+import router from '@ohos.router';
 
 @Component
 export struct HomeProfileTab {
@@ -46,13 +47,21 @@ export struct HomeProfileTab {
         .height(88)
 
         Column({ space: 0 }) {
-          this.MenuRow($r('app.media.ic_profile_security'), '系统设置')
+          this.MenuRow($r('app.media.ic_profile_security'), '系统设置', () => {
+            router.pushUrl({ url: 'pages/SystemSettingsPage' });
+          })
           this.MenuDivider()
-          this.MenuRow($r('app.media.ic_profile_devices'), '投屏设置')
+          this.MenuRow($r('app.media.ic_profile_devices'), '投屏设置', () => {
+            router.pushUrl({ url: 'pages/CastingSettingsPage' });
+          })
           this.MenuDivider()
-          this.MenuRow($r('app.media.ic_profile_feedback'), '意见反馈')
+          this.MenuRow($r('app.media.ic_profile_feedback'), '意见反馈', () => {
+            router.pushUrl({ url: 'pages/FeedbackPage' });
+          })
           this.MenuDivider()
-          this.MenuRow($r('app.media.ic_profile_about'), '关于')
+          this.MenuRow($r('app.media.ic_profile_about'), '关于', () => {
+            router.pushUrl({ url: 'pages/AboutPage' });
+          })
         }
         .width('100%')
         .borderRadius(24)
@@ -172,7 +181,7 @@ export struct HomeProfileTab {
   }
 
   @Builder
-  private MenuRow(icon: Resource, label: string) {
+  private MenuRow(icon: Resource, label: string, onClick?: () => void) {
     Row({ space: 12 }) {
       Stack({ alignContent: Alignment.Center }) {
         Image(icon)
@@ -198,6 +207,11 @@ export struct HomeProfileTab {
     .width('100%')
     .height(56)
     .padding({ left: 16, right: 16 })
+    .onClick(() => {
+      if (onClick) {
+        onClick();
+      }
+    })
   }
 
   @Builder
