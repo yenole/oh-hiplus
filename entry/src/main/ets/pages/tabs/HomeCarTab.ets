@@ -1,4 +1,4 @@
-import {hapVersion} from "libohos.so";
+import {hapVersion, initAgent, startAgent} from "libohos.so";
 import { common, Want } from '@kit.AbilityKit';
 import { smartMobilityCommon } from "@kit.CarKit";
 import preferences from '@ohos.data.preferences';
@@ -73,28 +73,48 @@ export struct HomeCarTab {
   }
 
   private startLauncherAbility(): void {
-// return
-    let awareness = smartMobilityCommon.getSmartMobilityAwareness();
-    let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
-    if (status.status == 0) {
-      return
+    if (!this.wirelessDebugPort) {
+      console.error('无线调试端口未设置，无法初始化投屏 Agent');
+      this.showPortInputDialog();
+      return;
     }
-    let displayId = status.data["DISPLAY_ID"].toString() || "0";
-    let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    FloatWindowManager.create(context, parseInt(displayId)); // displayId = 0 表示主屏幕
-    // const want: Want = {
-    //   bundleName: this.context.abilityInfo.bundleName,
-    //   abilityName: 'LauncherAbility'
-    // };
-    //
-    // this.context.startAbility(want, (err) => {
-    //   if (err.code) {
-    //     console.error(`Failed to start LauncherAbility. Code: ${err.code}, message: ${err.message}`);
-    //     return;
-    //   }
-    //   console.info('Succeeded in starting LauncherAbility.');
-    //   this.isCasting = true;
-    // });
+
+    const port = parseInt(this.wirelessDebugPort, 10);
+    initAgent(port)
+      .then((result: string) => {
+        console.info(`initAgent succeeded: ${result}`);
+        return startAgent(port);
+      })
+      .then((result: string) => {
+        console.info(`startAgent succeeded: ${result}`);
+      })
+      .catch((error: Error) => {
+        console.error('初始化或启动投屏 Agent 失败:', error);
+      });
+
+// return
+    //let awareness = smartMobilityCommon.getSmartMobilityAwareness();
+    //let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
+    //if (status.status == 0) {
+    //  return
+    //}
+    //let displayId = status.data["DISPLAY_ID"].toString() || "0";
+    //let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    //FloatWindowManager.create(context, parseInt(displayId)); // displayId = 0 表示主屏幕
+
+     const want: Want = {
+       bundleName: this.context.abilityInfo.bundleName,
+       abilityName: 'LauncherAbility'
+     };
+    
+     this.context.startAbility(want, (err) => {
+       if (err.code) {
+         console.error(`Failed to start LauncherAbility. Code: ${err.code}, message: ${err.message}`);
+         return;
+       }
+       console.info('Succeeded in starting LauncherAbility.');
+       this.isCasting = true;
+     });
   }
 
   build() {

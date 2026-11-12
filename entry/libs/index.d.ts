@@ -22,6 +22,8 @@ export interface V1User {
   member: string
 }
 
+export declare function closeAgent(port: number): Promise<string>
+
 export declare function displayClick(display: number, x: number, y: number): Promise<string>
 
 export declare function fetchGallery(package: string): Promise<GalleryInfo>
@@ -30,7 +32,11 @@ export declare function hapVersion(port: number, pkg: string): Promise<string>
 
 export declare function haps(port: number): Promise<Array<HapApp>>
 
+export declare function initAgent(port: number): Promise<string>
+
 export declare function shell(port: number, cmd: string): Promise<string>
+
+export declare function startAgent(port: number): Promise<string>
 
 export declare function v1Authorize(): Promise<string>
 
