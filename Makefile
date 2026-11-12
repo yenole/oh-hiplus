@@ -14,7 +14,7 @@ HDC ?= $(if $(wildcard $(SDK_HOME)/default/openharmony/toolchains/hdc),$(SDK_HOM
 HAP := $(MODULE)/build/default/outputs/$(PRODUCT)/$(MODULE)-$(PRODUCT)-signed.hap
 HDC_TARGET := $(if $(DEVICE),-t "$(DEVICE)")
 
-.PHONY: help build clean rebuild install launch deploy
+.PHONY: help build clean rebuild install launch deploy logs
 
 help:
 	@printf '%s\n' \
@@ -22,7 +22,11 @@ help:
 		'make install               Install the HAP on the connected device' \
 		'make launch                Launch the application on the device' \
 		'make deploy                Build, install, and launch on the device' \
+		'make logs                  View hiplus/JSAPP logs from the device' \
 		'make deploy DEVICE=<id>    Select a device when multiple devices are connected'
+
+dev:
+	cargo watch -C './' -w "./entry/" -c -s 'make deploy' 
 
 build:
 	DEVECO_SDK_HOME="$(SDK_HOME)" HARMONYOS_SDK_HOME="$(SDK_HOME)" JAVA_HOME="$(DEVECO_HOME)/jbr/Contents/Home" NODE_HOME="$(DEVECO_HOME)/tools/node" PATH="$(DEVECO_HOME)/tools/hvigor/bin:$(DEVECO_HOME)/jbr/Contents/Home/bin:$(DEVECO_HOME)/tools/node/bin:$(DEVECO_HOME)/tools/arktsdoc/bin:$(DEVECO_HOME)/tools/ohpm/bin:$(PATH)" $(NODE) "$(HVIGORW)" --mode module -p module=$(MODULE)@default -p product=$(PRODUCT) -p requiredDeviceType=phone assembleHap --analyze=normal --parallel --incremental --no-daemon
@@ -40,4 +44,7 @@ install:
 launch:
 	$(HDC) $(HDC_TARGET) shell aa start -a $(ABILITY) -b $(BUNDLE)
 
-deploy: build install launch
+logs:
+	$(HDC) $(HDC_TARGET) hilog | grep 'hiplus/JSAPP'
+
+deploy: build install launch logs
