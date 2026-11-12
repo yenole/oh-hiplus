@@ -24,6 +24,60 @@ struct AppWindowContent {
   @State surfaceHeight: number = 0;
   @State scaleRatio: number = 1; // 统一的缩放比例
   private currentWindow: window.Window | null = null;
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private touchLastX: number = 0;
+  private touchLastY: number = 0;
+  private touchStartTime: number = 0;
+  private readonly touchMoveThreshold: number = 12; // vp，过滤轻微抖动
+  private readonly swipeThreshold: number = 10; // vp
+  private readonly longClickThreshold: number = 500; // ms
+
+  private toVirtualX(xVp: number): number {
+    return Math.floor(vp2px(xVp) * this.scaleRatio);
+  }
+
+  private toVirtualY(yVp: number): number {
+    return Math.floor(vp2px(yVp) * this.scaleRatio);
+  }
+
+  private async forwardTouchClick(xVp: number, yVp: number): Promise<void> {
+    const x = this.toVirtualX(xVp);
+    const y = this.toVirtualY(yVp);
+    try {
+      const result: string = await libohos.displayClick(this.displayId, x, y);
+      console.log(`AppWindowContent: displayClick(${x}, ${y}) 返回: ${result}`);
+    } catch (error) {
+      console.log(`AppWindowContent: 转发 click 失败:`, JSON.stringify(error));
+    }
+  }
+
+  private async forwardTouchLongClick(xVp: number, yVp: number): Promise<void> {
+    const x = this.toVirtualX(xVp);
+    const y = this.toVirtualY(yVp);
+    try {
+      const result: string = await libohos.displayLongClick(this.displayId, x, y);
+      console.log(`AppWindowContent: displayLongClick(${x}, ${y}) 返回: ${result}`);
+    } catch (error) {
+      console.log(`AppWindowContent: 转发 longclick 失败:`, JSON.stringify(error));
+    }
+  }
+
+  private async forwardTouchSwipe(startXVp: number, startYVp: number, endXVp: number, endYVp: number, durationMs: number): Promise<void> {
+    const startX = this.toVirtualX(startXVp);
+    const startY = this.toVirtualY(startYVp);
+    const endX = this.toVirtualX(endXVp);
+    const endY = this.toVirtualY(endYVp);
+    const distancePx = Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY));
+    // displaySwipe 的 speed 使用 px/s；触摸耗时以 ms 计，至少按 1ms 避免除零。
+    const speed = Math.max(1, Math.round(distancePx * 1000 / Math.max(1, durationMs)));
+    try {
+      const result: string = await libohos.displaySwipe(this.displayId, startX, startY, endX, endY, speed);
+      console.log(`AppWindowContent: displaySwipe(${startX}, ${startY} -> ${endX}, ${endY}, speed=${speed}px/s) 返回: ${result}`);
+    } catch (error) {
+      console.log(`AppWindowContent: 转发 swipe 失败:`, JSON.stringify(error));
+    }
+  }
 
   aboutToAppear() {
     console.log("AppWindowContent: aboutToAppear - 页面即将加载");
@@ -175,29 +229,48 @@ struct AppWindowContent {
           await this.launchAppInVirtualScreen();
         })
         .onTouch(async (event: TouchEvent) => {
+          if (event.touches.length === 0) {
+            return;
+          }
+
+          const touch = event.touches[0];
+          const x = touch.x;
+          const y = touch.y;
+
           if (event.type === TouchType.Down) {
-            const surfaceX_vp = event.touches[0].x;
-            const surfaceY_vp = event.touches[0].y;
-            
-            // 将 vp 转换为 px（使用 display 的 densityPixels）
-            const surfaceX_px = vp2px(surfaceX_vp);
-            const surfaceY_px = vp2px(surfaceY_vp);
-            
-            // 使用统一的缩放比例计算虚拟屏幕坐标
-            const virtualX = Math.floor(surfaceX_px * this.scaleRatio);
-            const virtualY = Math.floor(surfaceY_px * this.scaleRatio);
-            
-            console.log(`AppWindowContent: 触摸事件 ${event.type}`);
-            console.log(`  Surface坐标(vp): (${surfaceX_vp.toFixed(2)}, ${surfaceY_vp.toFixed(2)})`);
-            console.log(`  Surface坐标(px): (${surfaceX_px}, ${surfaceY_px})`);
-            console.log(`  虚拟屏幕坐标: (${virtualX}, ${virtualY}), 缩放比例: ${this.scaleRatio.toFixed(2)}`);
-            
-            // 将转换后的坐标转发到 libohos.so 的 agentClick
-            try {
-              const result:string = await libohos.displayClick(this.displayId, virtualX, virtualY);
-              console.log(`AppWindowContent: agentClick 返回: ${result}`);
-            } catch (error) {
-              console.log(`AppWindowContent: 转发触摸事件失败:`, JSON.stringify(error));
+            this.touchStartX = x;
+            this.touchStartY = y;
+            this.touchLastX = x;
+            this.touchLastY = y;
+            this.touchStartTime = Date.now();
+            console.log(`AppWindowContent: touch down (${x.toFixed(1)}, ${y.toFixed(1)})`);
+            return;
+          }
+
+          if (event.type === TouchType.Move) {
+            this.touchLastX = x;
+            this.touchLastY = y;
+            return;
+          }
+
+          if (event.type === TouchType.Up) {
+            const duration = Date.now() - this.touchStartTime;
+            const deltaX = x - this.touchStartX;
+            const deltaY = y - this.touchStartY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            if (distance >= this.swipeThreshold) {
+              const direction = Math.abs(deltaX) > Math.abs(deltaY)
+                ? (deltaX > 0 ? '右' : '左')
+                : (deltaY > 0 ? '下' : '上');
+              console.log(`AppWindowContent: 识别为 swipe-${direction}, 起点(${this.touchStartX.toFixed(1)}, ${this.touchStartY.toFixed(1)}), 终点(${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${duration}ms`);
+              await this.forwardTouchSwipe(this.touchStartX, this.touchStartY, x, y, duration);
+            } else if (distance <= this.touchMoveThreshold && duration >= this.longClickThreshold) {
+              console.log(`AppWindowContent: 识别为 longclick, 坐标(${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${duration}ms`);
+              await this.forwardTouchLongClick(x, y);
+            } else if (distance <= this.touchMoveThreshold) {
+              console.log(`AppWindowContent: 识别为 click, 坐标(${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${duration}ms`);
+              await this.forwardTouchClick(x, y);
             }
           }
         })
