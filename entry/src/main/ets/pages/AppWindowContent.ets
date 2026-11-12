@@ -17,6 +17,7 @@ struct AppWindowContent {
   @State windowName: string = "";
   @State displayId: number = 0;
   @State isAppLoaded: boolean = false;
+  @State isMenuVisible: boolean = false;
   @State virtualWidth: number = 0;
   @State virtualHeight: number = 0;
   @State surfaceWidth: number = 0;
@@ -60,6 +61,23 @@ struct AppWindowContent {
         console.log(`AppWindowContent: 销毁虚拟屏幕失败:`, JSON.stringify(error));
       }
     }
+  }
+
+  private closeAppWindow(): void {
+    this.isMenuVisible = false;
+    if (!this.currentWindow) {
+      console.log("AppWindowContent: 当前窗口实例不存在，无法关闭");
+      return;
+    }
+
+    this.currentWindow.destroyWindow((err) => {
+      if (err.code != 0) {
+        console.log("AppWindowContent: 关闭窗口失败:", JSON.stringify(err));
+      } else {
+        console.log("AppWindowContent: 窗口已关闭");
+        this.currentWindow = null;
+      }
+    });
   }
 
   async launchAppInVirtualScreen() {
@@ -216,36 +234,54 @@ struct AppWindowContent {
         // 中间的小灰条指示器
         Row()
           .width(60)
-          .height(5)
-          .borderRadius(2.5)
+          .height(8)
+          .borderRadius(4)
           .backgroundColor('#BBBBBB')
+          .onClick(() => {
+            this.isMenuVisible = !this.isMenuVisible;
+            console.log(`AppWindowContent: ${this.isMenuVisible ? '打开' : '关闭'}头部菜单`);
+          })
+          .gesture(
+            PanGesture(this.panOption)
+              .onActionStart((event: GestureEvent) => {
+                console.log("AppWindowContent: 开始拖动");
+              })
+              .onActionUpdate((event: GestureEvent) => {
+                if (this.currentWindow) {
+                  let properties = this.currentWindow.getWindowProperties();
+                  let newX = properties.windowRect.left + event.offsetX;
+                  let newY = properties.windowRect.top + event.offsetY;
+                  this.currentWindow.moveWindowTo(newX, newY, (err) => {
+                    if (err.code != 0) {
+                      console.log("AppWindowContent: 移动窗口失败:", JSON.stringify(err));
+                    }
+                  });
+                }
+              })
+              .onActionEnd((event: GestureEvent) => {
+                console.log("AppWindowContent: 拖动结束");
+              })
+          )
       }
-      .width('100%')
-      .height(40)
+      .width(60)
+      .height(20)
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
-      .gesture(
-        PanGesture(this.panOption)
-          .onActionStart((event: GestureEvent) => {
-            console.log("AppWindowContent: 开始拖动");
-          })
-          .onActionUpdate((event: GestureEvent) => {
-            if (this.currentWindow) {
-              let properties = this.currentWindow.getWindowProperties();
-              let newX = properties.windowRect.left + event.offsetX;
-              let newY = properties.windowRect.top + event.offsetY;
-              
-              this.currentWindow.moveWindowTo(newX, newY, (err) => {
-                if (err.code != 0) {
-                  console.log("AppWindowContent: 移动窗口失败:", JSON.stringify(err));
-                }
-              });
-            }
-          })
-          .onActionEnd((event: GestureEvent) => {
-            console.log("AppWindowContent: 拖动结束");
-          })
-      )
+
+      if (this.isMenuVisible) {
+        Column() {
+          Image($r('app.media.ic_close'))
+            .width(24)
+            .height(24)
+            .padding(4)
+            .backgroundColor('#FFFFFF')
+            .border({ width: 1, color: '#D9D9D9', radius: 6 })
+            .onClick(() => this.closeAppWindow())
+        }
+        .width(120)
+        .backgroundColor('#00000000')
+        .position({ x: '50%', y: 40 })
+      }
     }
     .width('100%')
     .height('100%')
