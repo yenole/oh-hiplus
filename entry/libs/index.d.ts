@@ -26,6 +26,10 @@ export declare function closeAgent(port: number): Promise<string>
 
 export declare function displayClick(display: number, x: number, y: number): Promise<string>
 
+export declare function displayLongClick(display: number, x: number, y: number): Promise<string>
+
+export declare function displaySwipe(display: number, startX: number, startY: number, endX: number, endY: number, speed: number): Promise<string>
+
 export declare function fetchGallery(package: string): Promise<GalleryInfo>
 
 export declare function hapVersion(port: number, pkg: string): Promise<string>
