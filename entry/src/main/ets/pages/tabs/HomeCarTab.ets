@@ -95,7 +95,10 @@ export struct HomeCarTab {
     let awareness = smartMobilityCommon.getSmartMobilityAwareness();
     let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
     if (status.status == 0) {
-        return;
+      this.getUIContext().getPromptAction().showToast({
+        message: '请先连接HiCar！'
+      });
+      return;
              const want: Want = {
        bundleName: this.context.abilityInfo.bundleName,
        abilityName: 'LauncherAbility'
