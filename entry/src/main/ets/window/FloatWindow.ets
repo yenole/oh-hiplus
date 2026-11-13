@@ -119,6 +119,12 @@ struct FloatWindow {
   @State rowCount: number = 1; // 可以显示的行数
   private displayId: number = 0; // FloatWindow 的 displayId
   private readonly CACHE_KEY = 'hap_apps_cache';
+  // 应用列表展开时注册的窗口外部点击回调，收起时需要解注册。
+  private touchOutsideCallback: Callback<void> = () => {
+    console.log("FloatWindow: 检测到窗口外部点击，收起应用列表");
+    this.collapseToListIcon();
+  };
+  private isTouchOutsideListening: boolean = false;
 
   aboutToAppear() {
     console.log("FloatWindow: aboutToAppear - 页面即将加载");
@@ -144,6 +150,40 @@ struct FloatWindow {
 
   aboutToDisappear() {
     console.log("FloatWindow: aboutToDisappear - 页面即将销毁");
+    this.unregisterTouchOutsideListener();
+  }
+
+  /**
+   * 注册窗口外部点击监听：应用列表展开时，点击窗口之外区域收起列表。
+   */
+  private registerTouchOutsideListener(): void {
+    if (this.isTouchOutsideListening || !this.currentWindow) {
+      return;
+    }
+    try {
+      this.currentWindow.on('touchOutside', this.touchOutsideCallback);
+      this.isTouchOutsideListening = true;
+      console.log("FloatWindow: 已注册 touchOutside 监听");
+    } catch (error) {
+      console.error("FloatWindow: 注册 touchOutside 监听失败:", JSON.stringify(error));
+    }
+  }
+
+  /**
+   * 解注册窗口外部点击监听，避免列表收起后仍然响应外部点击。
+   */
+  private unregisterTouchOutsideListener(): void {
+    if (!this.isTouchOutsideListening || !this.currentWindow) {
+      return;
+    }
+    try {
+      this.currentWindow.off('touchOutside', this.touchOutsideCallback);
+      console.log("FloatWindow: 已解注册 touchOutside 监听");
+    } catch (error) {
+      console.error("FloatWindow: 解注册 touchOutside 监听失败:", JSON.stringify(error));
+    } finally {
+      this.isTouchOutsideListening = false;
+    }
   }
 
   private async loadAppsFromCache(): Promise<void> {
@@ -165,6 +205,47 @@ struct FloatWindow {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /**
+   * 收起应用列表并恢复悬浮图标样式（尺寸、圆角、位置、监听）。
+   * 外部点击、启动应用后、以及再次点击图标都走这里，保证行为一致。
+   */
+  private collapseToListIcon(): void {
+    if (!this.currentWindow) {
+      this.currentWindow = AppStorage.get<window.Window>("floatWindow") || null;
+    }
+    if (!this.currentWindow) {
+      console.log("FloatWindow: currentWindow 为 null，无法恢复图标态");
+      this.isExpanded = false;
+      return;
+    }
+
+    // 先切 UI 为图标态，再改窗口尺寸，避免中间态露出半张列表。
+    this.isExpanded = false;
+    this.unregisterTouchOutsideListener();
+    AppWindow.showAll();
+
+    this.currentWindow.resize(96, 96, (err) => {
+      if (err.code != 0) {
+        console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
+      } else {
+        console.log("FloatWindow: 窗口大小恢复为 96x96");
+      }
+    });
+    this.currentWindow.setWindowCornerRadius(16).catch((error: Error) => {
+      console.log("FloatWindow: 恢复悬浮窗圆角失败:", JSON.stringify(error));
+    });
+
+    // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
+    const initialX = getFloatWindowInitialX(this.displayId);
+    this.currentWindow.moveWindowTo(initialX + 100, 100, (err) => {
+      if (err.code != 0) {
+        console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
+      } else {
+        console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
+      }
+    });
   }
 
   toggleWindow() {
@@ -249,30 +330,12 @@ struct FloatWindow {
       });
       // 设置窗口圆角
        this.currentWindow.setWindowCornerRadius(8).then(()=>{})
+      // 应用列表展示期间监听窗口外部点击，点击列表外区域自动收起。
+      this.registerTouchOutsideListener();
     } else {
-      // 收起应用列表后恢复所有应用悬浮窗口。
-      AppWindow.showAll();
-      // 收起：恢复原来的小图标，并移动到初始位置
-      this.currentWindow.resize(96, 96, (err) => {
-        if (err.code != 0) {
-          console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
-        } else {
-          console.log("FloatWindow: 窗口大小恢复为 96x96");
-        }
-      });
-      this.currentWindow.setWindowCornerRadius(16).catch((error: Error) => {
-        console.log("FloatWindow: 恢复悬浮窗圆角失败:", JSON.stringify(error));
-      });
-      
-      // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
-      const initialX = getFloatWindowInitialX(this.displayId);
-      this.currentWindow.moveWindowTo(initialX +100, 100, (err) => {
-        if (err.code != 0) {
-          console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
-        } else {
-          console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
-        }
-      });
+      // 收起：恢复悬浮图标样式，统一由 collapseToListIcon 处理。
+      this.isExpanded = true;
+      this.collapseToListIcon();
     }
   }
 
@@ -286,26 +349,8 @@ struct FloatWindow {
       // 使用 AppWindow 创建悬浮框来显示应用，使用相同的 displayId
       AppWindow.create(app.package, this.displayId, context);
       
-      // 启动后收起悬浮窗
-      this.isExpanded = false;
-      this.currentWindow?.resize(96, 96, (err) => {
-        if (err.code != 0) {
-          console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
-        }
-      });
-      this.currentWindow?.setWindowCornerRadius(16).catch((error: Error) => {
-        console.log("FloatWindow: 设置悬浮窗圆角失败:", JSON.stringify(error));
-      });
-      
-      // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
-      const initialX = getFloatWindowInitialX(this.displayId);
-      this.currentWindow?.moveWindowTo(initialX + 100, 100, (err) => {
-        if (err.code != 0) {
-          console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
-        } else {
-          console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
-        }
-      });
+      // 启动后收起应用列表，恢复悬浮图标样式。
+      this.collapseToListIcon();
     } catch (error) {
       console.log(`FloatWindow: 创建应用窗口异常:`, JSON.stringify(error));
     }
