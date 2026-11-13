@@ -26,11 +26,13 @@ struct AppWindowContent {
   private currentWindow: window.Window | null = null;
   private touchStartX: number = 0;
   private touchStartY: number = 0;
-  private touchLastX: number = 0;
-  private touchLastY: number = 0;
   private touchStartTime: number = 0;
-  private readonly touchMoveThreshold: number = 12; // vp，过滤轻微抖动
-  private readonly swipeThreshold: number = 10; // vp
+  private swipeTriggered: boolean = false;
+  private swipeAnchorX: number = 0;
+  private swipeAnchorY: number = 0;
+  private swipeAnchorTime: number = 0;
+  private readonly touchMoveThreshold: number = 12; // vp，点击允许的最大移动距离
+  private readonly swipeInterval: number = 100; // ms
   private readonly longClickThreshold: number = 500; // ms
 
   private toVirtualX(xVp: number): number {
@@ -70,7 +72,7 @@ struct AppWindowContent {
     const endY = this.toVirtualY(endYVp);
     const distancePx = Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY));
     // displaySwipe 的 speed 使用 px/s；触摸耗时以 ms 计，至少按 1ms 避免除零。
-    const speed = Math.max(1, Math.round(distancePx * 1000 / Math.max(1, durationMs)));
+    const speed = Math.max(1, Math.round(distancePx * 1000 / Math.max(1, durationMs) * 1.8));
     try {
       const result: string = await libohos.displaySwipe(this.displayId, startX, startY, endX, endY, speed);
       console.log(`AppWindowContent: displaySwipe(${startX}, ${startY} -> ${endX}, ${endY}, speed=${speed}px/s) 返回: ${result}`);
@@ -240,16 +242,32 @@ struct AppWindowContent {
           if (event.type === TouchType.Down) {
             this.touchStartX = x;
             this.touchStartY = y;
-            this.touchLastX = x;
-            this.touchLastY = y;
             this.touchStartTime = Date.now();
+            this.swipeAnchorX = x;
+            this.swipeAnchorY = y;
+            this.swipeAnchorTime = this.touchStartTime;
+            this.swipeTriggered = false;
             console.log(`AppWindowContent: touch down (${x.toFixed(1)}, ${y.toFixed(1)})`);
             return;
           }
 
           if (event.type === TouchType.Move) {
-            this.touchLastX = x;
-            this.touchLastY = y;
+            const now = Date.now();
+            const deltaX = x - this.swipeAnchorX;
+            const deltaY = y - this.swipeAnchorY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (now - this.swipeAnchorTime >= this.swipeInterval && distance > this.touchMoveThreshold) {
+              const swipeStartX = this.swipeAnchorX;
+              const swipeStartY = this.swipeAnchorY;
+              const swipeDuration = Math.max(1, now - this.swipeAnchorTime);
+              this.swipeTriggered = true;
+              this.swipeAnchorX = x;
+              this.swipeAnchorY = y;
+              this.swipeAnchorTime = now;
+              console.log(`AppWindowContent: swipe 达到${this.swipeInterval}ms间隔，转发 (${swipeStartX.toFixed(1)}, ${swipeStartY.toFixed(1)}) -> (${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${swipeDuration}ms`);
+              // 不阻塞 Touch Move 事件处理，避免等待 native swipe 入队造成触摸卡顿。
+              this.forwardTouchSwipe(swipeStartX, swipeStartY, x, y, swipeDuration);
+            }
             return;
           }
 
@@ -259,13 +277,11 @@ struct AppWindowContent {
             const deltaY = y - this.touchStartY;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            if (distance >= this.swipeThreshold) {
-              const direction = Math.abs(deltaX) > Math.abs(deltaY)
-                ? (deltaX > 0 ? '右' : '左')
-                : (deltaY > 0 ? '下' : '上');
-              console.log(`AppWindowContent: 识别为 swipe-${direction}, 起点(${this.touchStartX.toFixed(1)}, ${this.touchStartY.toFixed(1)}), 终点(${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${duration}ms`);
-              await this.forwardTouchSwipe(this.touchStartX, this.touchStartY, x, y, duration);
-            } else if (distance <= this.touchMoveThreshold && duration >= this.longClickThreshold) {
+            if (this.swipeTriggered) {
+              return;
+            }
+
+            if (distance <= this.touchMoveThreshold && duration >= this.longClickThreshold) {
               console.log(`AppWindowContent: 识别为 longclick, 坐标(${x.toFixed(1)}, ${y.toFixed(1)}), 耗时${duration}ms`);
               await this.forwardTouchLongClick(x, y);
             } else if (distance <= this.touchMoveThreshold) {
@@ -338,22 +354,24 @@ struct AppWindowContent {
       }
       .width(60)
       .height(20)
+      .margin({ top: 6 })
       .justifyContent(FlexAlign.Center)
       .alignItems(VerticalAlign.Center)
 
       if (this.isMenuVisible) {
-        Column() {
+        Row({ space: 8 }) {
           Image($r('app.media.ic_close'))
-            .width(24)
-            .height(24)
+            .width(32)
+            .height(32)
             .padding(4)
             .backgroundColor('#FFFFFF')
             .border({ width: 1, color: '#D9D9D9', radius: 6 })
             .onClick(() => this.closeAppWindow())
         }
-        .width(120)
+        .width('100%')
+        .justifyContent(FlexAlign.Center)
         .backgroundColor('#00000000')
-        .position({ x: '50%', y: 40 })
+        .position({ x: 0, y: 30 })
       }
     }
     .width('100%')
