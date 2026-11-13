@@ -5,19 +5,34 @@ import Want from "@ohos.app.ability.Want";
 import { AppWindow } from "./AppWindow";
 import preferences from '@ohos.data.preferences';
 import { HapApp } from "libohos.so";
-import { calculateDockSize } from "../utils/HiCarDockUtils";
+import { calculateDockSize, calculateFloatIconLayout, FloatIconLayout } from "../utils/HiCarDockUtils";
 
-function getFloatWindowInitialX(displayId: number): number {
-  let screenInfo: display.Display;
+/** 获取指定屏幕的 display 信息，失败时回退到默认屏幕。 */
+function getScreenInfo(displayId: number): display.Display {
   try {
-    screenInfo = displayId === 0
+    return displayId === 0
       ? display.getDefaultDisplaySync()
       : display.getDisplayByIdSync(displayId);
   } catch (error) {
     console.error(`FloatWindow: 获取 display ${displayId} 失败，使用默认屏幕信息:`, error);
-    screenInfo = display.getDefaultDisplaySync();
+    return display.getDefaultDisplaySync();
   }
-  return  calculateDockSize(screenInfo.width, screenInfo.height, screenInfo.densityPixels);
+}
+
+/** 计算指定屏幕下 HiCar Dock 的宽度（px）。 */
+function getDockSize(screenInfo: display.Display): number {
+  return calculateDockSize(screenInfo.width, screenInfo.height, screenInfo.densityPixels);
+}
+
+/** 计算悬浮图标态窗口的尺寸与位置（px，已按 vp 换算）。 */
+function getFloatIconLayout(displayId: number): FloatIconLayout {
+  const screenInfo = getScreenInfo(displayId);
+  return calculateFloatIconLayout(
+    screenInfo.width,
+    screenInfo.height,
+    screenInfo.densityPixels,
+    getDockSize(screenInfo)
+  );
 }
 
 export class FloatWindowManager {
@@ -62,27 +77,26 @@ export class FloatWindowManager {
       AppStorage.setOrCreate("floatWindowDisplayId", displayId);
       console.log(`FloatWindowManager: 窗口实例已保存到 AppStorage, displayId=${displayId}`);
       
-      // 设置窗口大小
-      win.resize(96, 96, (err) => {
+      // 设置窗口大小：图标边长按 vp 换算为 px，保证不同分辨率下物理尺寸一致。
+      const iconLayout = getFloatIconLayout(displayId);
+      win.resize(iconLayout.size, iconLayout.size, (err) => {
         if (err.code != 0) {
           console.log("FloatWindowManager: 设置窗口大小失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindowManager: 设置窗口大小成功: 96x96");
+          console.log(`FloatWindowManager: 设置窗口大小成功: ${iconLayout.size}x${iconLayout.size}`);
         }
       });
       // 设置系统悬浮窗圆角，确保窗口本身的透明区域也被裁切为圆角。
-      win.setWindowCornerRadius(16).catch((error: Error) => {
+      win.setWindowCornerRadius(iconLayout.radius).catch((error: Error) => {
         console.log("FloatWindowManager: 设置悬浮窗圆角失败:", JSON.stringify(error));
       });
-      
-      // 在原有 X 坐标基础上增加 HiCar Dock 宽度，避免悬浮图标与 Dock 重叠。
-      const initialX = getFloatWindowInitialX(displayId);
-      const dockWidth = initialX ;
-      win.moveWindowTo(initialX + 100, 100, (err) => {
+
+      // 图标位置：Dock 右侧 + 顶部间距，均按 vp 换算并限制在屏幕内。
+      win.moveWindowTo(iconLayout.x, iconLayout.y, (err) => {
         if (err.code != 0) {
           console.log("FloatWindowManager: 设置窗口位置失败:", JSON.stringify(err));
         } else {
-          console.log(`FloatWindowManager: 设置窗口位置成功: (${initialX}, 100), Dock宽度=${dockWidth}`);
+          console.log(`FloatWindowManager: 设置窗口位置成功: (${iconLayout.x}, ${iconLayout.y})`);
         }
       });
       
@@ -226,24 +240,24 @@ struct FloatWindow {
     this.unregisterTouchOutsideListener();
     AppWindow.showAll();
 
-    this.currentWindow.resize(96, 96, (err) => {
+    const iconLayout = getFloatIconLayout(this.displayId);
+    this.currentWindow.resize(iconLayout.size, iconLayout.size, (err) => {
       if (err.code != 0) {
         console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
       } else {
-        console.log("FloatWindow: 窗口大小恢复为 96x96");
+        console.log(`FloatWindow: 窗口大小恢复为 ${iconLayout.size}x${iconLayout.size}`);
       }
     });
-    this.currentWindow.setWindowCornerRadius(16).catch((error: Error) => {
+    this.currentWindow.setWindowCornerRadius(iconLayout.radius).catch((error: Error) => {
       console.log("FloatWindow: 恢复悬浮窗圆角失败:", JSON.stringify(error));
     });
 
-    // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
-    const initialX = getFloatWindowInitialX(this.displayId);
-    this.currentWindow.moveWindowTo(initialX + 100, 100, (err) => {
+    // 移动到 Dock 右侧的初始位置。
+    this.currentWindow.moveWindowTo(iconLayout.x, iconLayout.y, (err) => {
       if (err.code != 0) {
         console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
       } else {
-        console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
+        console.log(`FloatWindow: 窗口移动到初始位置 (${iconLayout.x}, ${iconLayout.y})`);
       }
     });
   }
@@ -266,19 +280,8 @@ struct FloatWindow {
         }
       });
       // 展开：显示应用列表，适配整个屏幕并预留间隔
-      // 根据 displayId 获取对应屏幕信息
-      let screenInfo: display.Display;
-      if (this.displayId === 0) {
-        screenInfo = display.getDefaultDisplaySync();
-      } else {
-        try {
-          screenInfo = display.getDisplayByIdSync(this.displayId);
-        } catch (error) {
-          console.error(`FloatWindow: 获取 display ${this.displayId} 失败:`, error);
-          screenInfo = display.getDefaultDisplaySync();
-        }
-      }
-      
+      const screenInfo = getScreenInfo(this.displayId);
+
       const screenWidth = screenInfo.width;
       const screenHeight = screenInfo.height;
       
@@ -287,7 +290,7 @@ struct FloatWindow {
       
       // 预留边距
       const margin = 60;
-      const dockWidth = calculateDockSize(screenWidth, screenHeight, screenInfo.densityPixels);
+      const dockWidth = getDockSize(screenInfo);
       const leftMargin = margin + dockWidth; // 左侧额外预留 HiCar Dock 宽度
       const windowWidth = screenWidth - leftMargin - margin; // 左侧用leftMargin，右侧用margin
       const windowHeight = screenHeight - margin * 2;
