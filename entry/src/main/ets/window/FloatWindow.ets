@@ -288,8 +288,8 @@ struct FloatWindow {
       // 判断横竖屏
       const isLandscape = screenWidth > screenHeight;
       
-      // 预留边距
-      const margin = 60;
+      // 预留边距（四周 16vp，按 density 换算为 px）
+      const margin = Math.floor(16 * screenInfo.densityPixels);
       const dockWidth = getDockSize(screenInfo);
       const leftMargin = margin + dockWidth; // 左侧额外预留 HiCar Dock 宽度
       const windowWidth = screenWidth - leftMargin - margin; // 左侧用leftMargin，右侧用margin
