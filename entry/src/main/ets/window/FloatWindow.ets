@@ -5,6 +5,20 @@ import Want from "@ohos.app.ability.Want";
 import { AppWindow } from "./AppWindow";
 import preferences from '@ohos.data.preferences';
 import { HapApp } from "libohos.so";
+import { calculateDockSize } from "../utils/HiCarDockUtils";
+
+function getFloatWindowInitialX(displayId: number): number {
+  let screenInfo: display.Display;
+  try {
+    screenInfo = displayId === 0
+      ? display.getDefaultDisplaySync()
+      : display.getDisplayByIdSync(displayId);
+  } catch (error) {
+    console.error(`FloatWindow: 获取 display ${displayId} 失败，使用默认屏幕信息:`, error);
+    screenInfo = display.getDefaultDisplaySync();
+  }
+  return  calculateDockSize(screenInfo.width, screenInfo.height, screenInfo.densityPixels);
+}
 
 export class FloatWindowManager {
   private static windowInstance: window.Window | null = null;
@@ -49,20 +63,26 @@ export class FloatWindowManager {
       console.log(`FloatWindowManager: 窗口实例已保存到 AppStorage, displayId=${displayId}`);
       
       // 设置窗口大小
-      win.resize(80, 80, (err) => {
+      win.resize(96, 96, (err) => {
         if (err.code != 0) {
           console.log("FloatWindowManager: 设置窗口大小失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindowManager: 设置窗口大小成功: 80x80");
+          console.log("FloatWindowManager: 设置窗口大小成功: 96x96");
         }
       });
+      // 设置系统悬浮窗圆角，确保窗口本身的透明区域也被裁切为圆角。
+      win.setWindowCornerRadius(16).catch((error: Error) => {
+        console.log("FloatWindowManager: 设置悬浮窗圆角失败:", JSON.stringify(error));
+      });
       
-      // 设置窗口位置（左侧增加80px间隔）
-      win.moveWindowTo(180, 100, (err) => {
+      // 在原有 X 坐标基础上增加 HiCar Dock 宽度，避免悬浮图标与 Dock 重叠。
+      const initialX = getFloatWindowInitialX(displayId);
+      const dockWidth = initialX ;
+      win.moveWindowTo(initialX + 100, 100, (err) => {
         if (err.code != 0) {
           console.log("FloatWindowManager: 设置窗口位置失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindowManager: 设置窗口位置成功: (180, 100)");
+          console.log(`FloatWindowManager: 设置窗口位置成功: (${initialX}, 100), Dock宽度=${dockWidth}`);
         }
       });
       
@@ -156,6 +176,14 @@ struct FloatWindow {
     this.isExpanded = !this.isExpanded;
 
     if (this.isExpanded) {
+      // 隐藏所有已打开的应用悬浮窗口。
+      AppWindow.minimizeAll();
+      // 确保应用列表悬浮窗口显示在前台。
+      this.currentWindow.showWindow((err) => {
+        if (err.code != 0) {
+          console.error("FloatWindow: 将应用列表窗口提到前台失败:", JSON.stringify(err));
+        }
+      });
       // 展开：显示应用列表，适配整个屏幕并预留间隔
       // 根据 displayId 获取对应屏幕信息
       let screenInfo: display.Display;
@@ -178,7 +206,8 @@ struct FloatWindow {
       
       // 预留边距
       const margin = 60;
-      const leftMargin = margin + 160; // 左侧额外增加160px
+      const dockWidth = calculateDockSize(screenWidth, screenHeight, screenInfo.densityPixels);
+      const leftMargin = margin + dockWidth; // 左侧额外预留 HiCar Dock 宽度
       const windowWidth = screenWidth - leftMargin - margin; // 左侧用leftMargin，右侧用margin
       const windowHeight = screenHeight - margin * 2;
       
@@ -218,25 +247,30 @@ struct FloatWindow {
           console.log(`FloatWindow: 窗口大小调整为 ${windowWidth}x${windowHeight}`);
         }
       });
-      
       // 设置窗口圆角
-       this.currentWindow.setWindowCornerRadius(20).then(()=>{})
+       this.currentWindow.setWindowCornerRadius(8).then(()=>{})
     } else {
+      // 收起应用列表后恢复所有应用悬浮窗口。
+      AppWindow.showAll();
       // 收起：恢复原来的小图标，并移动到初始位置
-      this.currentWindow.resize(80, 80, (err) => {
+      this.currentWindow.resize(96, 96, (err) => {
         if (err.code != 0) {
           console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindow: 窗口大小恢复为 80x80");
+          console.log("FloatWindow: 窗口大小恢复为 96x96");
         }
       });
+      this.currentWindow.setWindowCornerRadius(16).catch((error: Error) => {
+        console.log("FloatWindow: 恢复悬浮窗圆角失败:", JSON.stringify(error));
+      });
       
-      // 移动到初始位置（左侧180px）
-      this.currentWindow.moveWindowTo(180, 100, (err) => {
+      // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
+      const initialX = getFloatWindowInitialX(this.displayId);
+      this.currentWindow.moveWindowTo(initialX +100, 100, (err) => {
         if (err.code != 0) {
           console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindow: 窗口移动到初始位置 (180, 100)");
+          console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
         }
       });
     }
@@ -247,23 +281,29 @@ struct FloatWindow {
     
     try {
       let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      // 选择应用时恢复现有窗口，再创建并显示所选应用。
+      AppWindow.showAll();
       // 使用 AppWindow 创建悬浮框来显示应用，使用相同的 displayId
       AppWindow.create(app.package, this.displayId, context);
       
       // 启动后收起悬浮窗
       this.isExpanded = false;
-      this.currentWindow?.resize(80, 80, (err) => {
+      this.currentWindow?.resize(96, 96, (err) => {
         if (err.code != 0) {
           console.log("FloatWindow: 调整窗口大小失败:", JSON.stringify(err));
         }
       });
+      this.currentWindow?.setWindowCornerRadius(16).catch((error: Error) => {
+        console.log("FloatWindow: 设置悬浮窗圆角失败:", JSON.stringify(error));
+      });
       
-      // 移动到初始位置（左侧180px）
-      this.currentWindow?.moveWindowTo(180, 100, (err) => {
+      // 移动到初始位置，并为 HiCar Dock 宽度留出横向空间。
+      const initialX = getFloatWindowInitialX(this.displayId);
+      this.currentWindow?.moveWindowTo(initialX + 100, 100, (err) => {
         if (err.code != 0) {
           console.log("FloatWindow: 移动窗口失败:", JSON.stringify(err));
         } else {
-          console.log("FloatWindow: 窗口移动到初始位置 (180, 100)");
+          console.log(`FloatWindow: 窗口移动到初始位置 (${initialX}, 100)`);
         }
       });
     } catch (error) {
@@ -346,15 +386,20 @@ struct FloatWindow {
         // 收起状态：显示悬浮图标
         Column() {
           Image($r('app.media.ic_float_icon'))
-            .width(60)
-            .height(60)
-            .fillColor('#2196F3')
+            .width('100%')
+            .height('100%')
+            .objectFit(ImageFit.Contain)
+            .borderRadius(8)
+            .clip(true)
         }
+        .padding(4)
         .width('100%')
         .height('100%')
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
         .backgroundColor(Color.Transparent)
+        .borderRadius(16)
+        .clip(true)
         .gesture(
           PanGesture(this.panOption)
             .onActionStart((event: GestureEvent) => {

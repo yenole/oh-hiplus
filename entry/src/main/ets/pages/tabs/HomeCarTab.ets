@@ -92,17 +92,10 @@ export struct HomeCarTab {
         console.error('初始化或启动投屏 Agent 失败:', error);
       });
 
-// return
-    //let awareness = smartMobilityCommon.getSmartMobilityAwareness();
-    //let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
-    //if (status.status == 0) {
-    //  return
-    //}
-    //let displayId = status.data["DISPLAY_ID"].toString() || "0";
-    //let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    //FloatWindowManager.create(context, parseInt(displayId)); // displayId = 0 表示主屏幕
-
-     const want: Want = {
+    let awareness = smartMobilityCommon.getSmartMobilityAwareness();
+    let status = awareness.getSmartMobilityStatus(smartMobilityCommon.SmartMobilityType.HICAR)
+    if (status.status == 0) {
+             const want: Want = {
        bundleName: this.context.abilityInfo.bundleName,
        abilityName: 'LauncherAbility'
      };
@@ -115,6 +108,13 @@ export struct HomeCarTab {
        console.info('Succeeded in starting LauncherAbility.');
        this.isCasting = true;
      });
+
+      return
+    }
+    let displayId = status.data["DISPLAY_ID"].toString() || "0";
+    let context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    FloatWindowManager.create(context, parseInt(displayId)); // displayId = 0 表示主屏幕
+
   }
 
   build() {

@@ -4,7 +4,27 @@ import { common } from "@kit.AbilityKit";
 import Want from "@ohos.app.ability.Want";
 
 export class AppWindow {
-  private static windowCounter: number = 0;
+  private static windows: window.Window[] = [];
+
+  static minimizeAll(): void {
+    AppWindow.windows.forEach((appWindow: window.Window) => {
+      appWindow.minimize((err) => {
+        if (err.code != 0) {
+          console.error("AppWindow: 隐藏悬浮窗失败:", JSON.stringify(err));
+        }
+      });
+    });
+  }
+
+  static showAll(): void {
+    AppWindow.windows.forEach((appWindow: window.Window) => {
+      appWindow.showWindow((err) => {
+        if (err.code != 0) {
+          console.error("AppWindow: 恢复悬浮窗失败:", JSON.stringify(err));
+        }
+      });
+    });
+  }
 
   /**
    * 创建并显示悬浮窗
@@ -35,6 +55,7 @@ export class AppWindow {
         return;
       }
 
+      AppWindow.windows.push(win);
       console.log(`AppWindow: 悬浮窗创建成功 - 窗口名称: ${windowName}`);
 
       // 获取显示屏信息
@@ -57,8 +78,8 @@ export class AppWindow {
       // 判断横竖屏
       const isLandscape = screenWidth > screenHeight;
       
-      // 窗口高度填充屏幕，宽度根据横竖屏调整
-      const windowHeight = screenHeight;
+      // 窗口高度比屏幕高度缩小 16px，宽度根据横竖屏调整
+      const windowHeight = Math.max(1, screenHeight - 16);
       const windowWidth = isLandscape ? Math.floor(screenWidth * 0.3) : Math.floor(screenWidth * 0.8);
 
       // 计算位置（靠右或居中）
@@ -92,6 +113,12 @@ export class AppWindow {
       } catch (error) {
         console.log(`AppWindow: 设置窗口圆角失败:`, JSON.stringify(error));
       }
+
+      win.on('windowEvent', (event: window.WindowEventType) => {
+        if (event === window.WindowEventType.WINDOW_DESTROYED) {
+          AppWindow.windows = AppWindow.windows.filter((item: window.Window) => item !== win);
+        }
+      });
 
       // 将包名和窗口实例存储到AppStorage，使用唯一的key，供UI组件使用
       AppStorage.setOrCreate(`appWindow_packageName_${windowName}`, packageName);
