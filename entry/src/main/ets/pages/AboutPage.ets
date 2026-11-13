@@ -173,7 +173,7 @@ export struct AboutPage {
         .strokeWidth(1)
         .color('#EEEAE8')
         .margin({ left: 52 })
-      this.InfoRow('用户协议与隐私', '请合理使用应用')
+      this.InfoRow('用户协议与隐私', '请勿商用，群友友好交流！')
     }
     .width('100%')
     .padding({ left: 16, right: 16 })
