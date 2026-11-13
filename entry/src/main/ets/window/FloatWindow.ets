@@ -292,9 +292,8 @@ struct FloatWindow {
       const windowWidth = screenWidth - leftMargin - margin; // 左侧用leftMargin，右侧用margin
       const windowHeight = screenHeight - margin * 2;
       
-      // 计算可以显示的行数
-      const titleBarHeight = 50;
-      const contentHeight = windowHeight - titleBarHeight;
+      // 计算可以显示的行数（已移除标题栏，列表直接占满窗口高度）
+      const contentHeight = windowHeight;
       
       // 根据横竖屏和容器高度动态计算行数
       // 横屏：显示3行，竖屏：显示更多行
@@ -361,28 +360,6 @@ struct FloatWindow {
       if (this.isExpanded) {
         // 展开状态：显示应用列表
         Column() {
-          // 标题栏
-          Row() {
-            Text('应用列表')
-              .fontSize(18)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#1C1B1B')
-            
-            Blank()
-            
-            Text('✕')
-              .fontSize(24)
-              .fontColor('#717786')
-              .onClick(() => {
-                console.log("FloatWindow: 关闭应用列表");
-                this.toggleWindow();
-              })
-          }
-          .width('100%')
-          .height(50)
-          .padding({ left: 16, right: 16 })
-          .backgroundColor('#F5F5F5')
-          
           // 应用列表
           if (this.isLoading) {
             Column() {
