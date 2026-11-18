@@ -5,6 +5,20 @@ import Want from "@ohos.app.ability.Want";
 
 export class AppWindow {
   private static windows: window.Window[] = [];
+  private static windowsByPackage: Map<string, window.Window> = new Map();
+
+  static showExisting(packageName: string): boolean {
+    const existingWindow = AppWindow.windowsByPackage.get(packageName);
+    if (!existingWindow) {
+      return false;
+    }
+    existingWindow.showWindow((err) => {
+      if (err.code != 0) {
+        console.error(`AppWindow: 恢复 ${packageName} 窗口失败:`, JSON.stringify(err));
+      }
+    });
+    return true;
+  }
 
   static minimizeAll(): void {
     AppWindow.windows.forEach((appWindow: window.Window) => {
@@ -33,6 +47,10 @@ export class AppWindow {
    * @param context - UIAbility上下文
    */
   static create(packageName: string, displayId: number, context: common.UIAbilityContext): void {
+    if (AppWindow.showExisting(packageName)) {
+      console.info(`AppWindow: ${packageName} 已有窗口，不重复创建`);
+      return;
+    }
     console.log(`AppWindow: 开始创建悬浮窗 - 包名: ${packageName}, displayId: ${displayId}`);
 
     // 生成唯一窗口名称（移除包名中的特殊字符）
@@ -56,6 +74,7 @@ export class AppWindow {
       }
 
       AppWindow.windows.push(win);
+      AppWindow.windowsByPackage.set(packageName, win);
       console.log(`AppWindow: 悬浮窗创建成功 - 窗口名称: ${windowName}`);
 
       // 获取显示屏信息
@@ -117,11 +136,15 @@ export class AppWindow {
       win.on('windowEvent', (event: window.WindowEventType) => {
         if (event === window.WindowEventType.WINDOW_DESTROYED) {
           AppWindow.windows = AppWindow.windows.filter((item: window.Window) => item !== win);
+          if (AppWindow.windowsByPackage.get(packageName) === win) {
+            AppWindow.windowsByPackage.delete(packageName);
+          }
         }
       });
 
       // 将包名和窗口实例存储到AppStorage，使用唯一的key，供UI组件使用
       AppStorage.setOrCreate(`appWindow_packageName_${windowName}`, packageName);
+      AppStorage.setOrCreate(`appWindow_hostDisplayId_${windowName}`, displayId);
       AppStorage.setOrCreate(`appWindow_instance_${windowName}`, win);
       AppStorage.setOrCreate(`appWindow_current`, windowName); // 设置当前窗口名称
 
