@@ -15,6 +15,7 @@ export struct HomeAppsTab {
   @State private selectedCategoryApps: HapApp[] = [];
   private hapApps: HapApp[] = [];
   private readonly CACHE_KEY = 'hap_apps_cache';
+  private readonly LAST_REFRESH_DATE_KEY = 'hap_apps_last_refresh_date';
   private wirelessDebugPort: number = 0;
 
   aboutToAppear(): void {
@@ -72,6 +73,35 @@ export struct HomeAppsTab {
     }
   }
 
+  private currentDateKey(): string {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    return `${now.getFullYear()}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
+  }
+
+  private async applyApps(apps: HapApp[]): Promise<void> {
+    this.hapApps = apps;
+    this.videoApps = apps.filter(app => app.category === '影视与直播');
+    this.musicApps = apps.filter(app => app.category === '音乐');
+    this.navigationApps = apps.filter(app => app.category === '出行导航');
+
+    const otherApps = apps.filter(app =>
+      app.category !== '影视与直播' &&
+      app.category !== '音乐' &&
+      app.category !== '出行导航'
+    );
+    const categoryMap = new Map<string, HapApp[]>();
+    otherApps.forEach(app => {
+      const category = app.category || '其他';
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, []);
+      }
+      categoryMap.get(category)!.push(app);
+    });
+    this.otherCategories = categoryMap;
+  }
+
   private async refreshApps(): Promise<void> {
     this.isRefreshing = true;
     
@@ -92,30 +122,13 @@ export struct HomeAppsTab {
       // 过滤掉 com.huawei.hmos.hicar 包名
       const apps = allApps.filter(app => app.package !== 'com.huawei.hmos.hicar');
       
-      // 保存到缓存
       await this.saveToCache(apps);
-      
-      // 更新数据
-      this.hapApps = apps;
-      this.videoApps = apps.filter(app => app.category === '影视与直播');
-      this.musicApps = apps.filter(app => app.category === '音乐');
-      this.navigationApps = apps.filter(app => app.category === '出行导航');
-      
-      const otherApps = apps.filter(app => 
-        app.category !== '影视与直播' && 
-        app.category !== '音乐' && 
-        app.category !== '出行导航'
-      );
-      const categoryMap = new Map<string, HapApp[]>();
-      otherApps.forEach(app => {
-        const category = app.category || '其他';
-        if (!categoryMap.has(category)) {
-          categoryMap.set(category, []);
-        }
-        categoryMap.get(category)!.push(app);
-      });
-      this.otherCategories = categoryMap;
-      
+      await this.applyApps(apps);
+
+      const appPreferences = await preferences.getPreferences(getContext(this), 'app_preferences');
+      await appPreferences.put(this.LAST_REFRESH_DATE_KEY, this.currentDateKey());
+      await appPreferences.flush();
+
       console.info('HomeAppsTab: Apps refreshed successfully');
     } catch (error) {
       console.error('HomeAppsTab: Failed to refresh apps', error);
@@ -133,71 +146,27 @@ export struct HomeAppsTab {
 
     this.isLoading = true;
 
-    // 获取无线调试端口
-    this.wirelessDebugPort = await this.getWirelessDebugPort();
-    
-    if (this.wirelessDebugPort === 0) {
-      console.error('HomeAppsTab: Wireless debug port not set');
-      this.isLoading = false;
-      return;
-    }
-
-    // 关闭自动刷新时优先使用缓存，否则进入应用页时获取最新列表
     const appPreferences = await preferences.getPreferences(getContext(this), 'app_preferences');
     const autoRefresh = await appPreferences.get('auto_refresh_apps', true) as boolean;
-    const cachedApps = autoRefresh ? null : await this.loadFromCache();
-    let apps: HapApp[];
-    
+    const lastRefreshDate = await appPreferences.get(this.LAST_REFRESH_DATE_KEY, '') as string;
+    const cachedApps = await this.loadFromCache();
+
     if (cachedApps) {
-      apps = cachedApps;
-    } else {
-      // 从API加载所有应用
-      const allApps: HapApp[] = await haps(this.wirelessDebugPort);
-      
-      // 过滤掉 com.huawei.hmos.hicar 包名
-      apps = allApps.filter(app => app.package !== 'com.huawei.hmos.hicar');
-      
-      // 保存到缓存
-      await this.saveToCache(apps);
+      await this.applyApps(cachedApps);
     }
-    
-    this.hapApps = apps;
-    
-    // 筛选视频类应用 - category = 影视与直播
-    this.videoApps = apps.filter(app => app.category === '影视与直播');
-    
-    // 筛选音乐类应用 - category = 音乐
-    this.musicApps = apps.filter(app => app.category === '音乐');
-    
-    // 筛选出行导航类应用 - category = 出行导航
-    this.navigationApps = apps.filter(app => app.category === '出行导航');
-    
-    // 其他分类归类为工具类，按 category 分组
-    const otherApps = apps.filter(app => 
-      app.category !== '影视与直播' && 
-      app.category !== '音乐' && 
-      app.category !== '出行导航'
-    );
-    const categoryMap = new Map<string, HapApp[]>();
-    otherApps.forEach(app => {
-      const category = app.category || '其他';
-      if (!categoryMap.has(category)) {
-        categoryMap.set(category, []);
-      }
-      categoryMap.get(category)!.push(app);
-    });
-    this.otherCategories = categoryMap;
-    
+
+    const shouldRefresh = !cachedApps || (autoRefresh && lastRefreshDate !== this.currentDateKey());
+    if (shouldRefresh) {
+      await this.refreshApps();
+    }
+
     this.isLoading = false;
     
-    console.info('HomeAppsTab: Loading apps...');
-    for (let app of apps) {
-      console.log(`->${app.name} ${app.package} ${app.category}`);
-    }
+    console.info(`HomeAppsTab: Loaded ${this.hapApps.length} apps`);
     console.info(`HomeAppsTab: Loaded ${this.videoApps.length} video apps with category = 影视与直播`);
     console.info(`HomeAppsTab: Loaded ${this.musicApps.length} music apps with category = 音乐`);
     console.info(`HomeAppsTab: Loaded ${this.navigationApps.length} navigation apps with category = 出行导航`);
-    console.info(`HomeAppsTab: Loaded ${otherApps.length} other apps in ${this.otherCategories.size} categories`);
+    console.info(`HomeAppsTab: Loaded ${this.otherCategories.size} other categories`);
   }
 
   build() {
