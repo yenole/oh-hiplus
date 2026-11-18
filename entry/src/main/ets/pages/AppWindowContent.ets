@@ -7,6 +7,7 @@ import hilog from '@ohos.hilog';
 
 // 导入 libohos.so 的 agentClick 函数
 import libohos from 'libohos.so';
+import { calculateDockSize } from '../utils/HiCarDockUtils';
 
 @Entry
 @Component
@@ -16,8 +17,10 @@ struct AppWindowContent {
   @State packageName: string = "";
   @State windowName: string = "";
   @State displayId: number = 0;
+  private hostDisplayId: number = 0;
   @State isAppLoaded: boolean = false;
   @State isMenuVisible: boolean = false;
+  @State isFullscreen: boolean = false;
   @State virtualWidth: number = 0;
   @State virtualHeight: number = 0;
   @State surfaceWidth: number = 0;
@@ -26,6 +29,8 @@ struct AppWindowContent {
   private currentWindow: window.Window | null = null;
   private touchStartX: number = 0;
   private touchStartY: number = 0;
+  private resizeStartDisplayX: number = 0;
+  private resizeStartDisplayY: number = 0;
   private touchStartTime: number = 0;
   private swipeTriggered: boolean = false;
   private swipeAnchorX: number = 0;
@@ -34,6 +39,37 @@ struct AppWindowContent {
   private readonly touchMoveThreshold: number = 12; // vp，点击允许的最大移动距离
   private readonly swipeInterval: number = 100; // ms
   private readonly longClickThreshold: number = 500; // ms
+  private readonly minWindowWidthVp: number = 240;
+  private readonly minWindowHeightVp: number = 320;
+  private resizeStartWidth: number = 0;
+  private resizeStartHeight: number = 0;
+  private resizeStartX: number = 0;
+  private resizeStartY: number = 0;
+  private resizeMode: string = 'right';
+  private resizeEdgeCandidate: string = '';
+  private resizeGestureActive: boolean = false;
+  private resizePending: boolean = false;
+  private windowResizeInFlight: boolean = false;
+  private pendingWindowWidth: number = 0;
+  private pendingWindowHeight: number = 0;
+  private pendingWindowX: number = 0;
+  private pendingWindowY: number = 0;
+  private pendingWindowMove: boolean = false;
+  private restoreWindowX: number = 0;
+  private restoreWindowY: number = 0;
+  private restoreWindowWidth: number = 0;
+  private restoreWindowHeight: number = 0;
+
+  private getHostDisplayInfo(): display.Display {
+    try {
+      return this.hostDisplayId > 0
+        ? display.getDisplayByIdSync(this.hostDisplayId)
+        : display.getDefaultDisplaySync();
+    } catch (error) {
+      console.error(`AppWindowContent: 获取宿主屏幕 ${this.hostDisplayId} 失败:`, JSON.stringify(error));
+      return display.getDefaultDisplaySync();
+    }
+  }
 
   private toVirtualX(xVp: number): number {
     return Math.floor(vp2px(xVp) * this.scaleRatio);
@@ -41,6 +77,215 @@ struct AppWindowContent {
 
   private toVirtualY(yVp: number): number {
     return Math.floor(vp2px(yVp) * this.scaleRatio);
+  }
+
+  private beginResize(mode: string): void {
+    if (!this.currentWindow) {
+      return;
+    }
+    const rect = this.currentWindow.getWindowProperties().windowRect;
+    this.resizeStartWidth = rect.width;
+    this.resizeStartHeight = rect.height;
+    this.resizeStartX = rect.left;
+    this.resizeStartY = rect.top;
+    this.resizeMode = mode;
+  }
+
+  private resizeCurrentWindow(deltaXPx: number, deltaYPx: number): void {
+    if (!this.currentWindow) {
+      return;
+    }
+    try {
+      const screen = this.getHostDisplayInfo();
+      const density = screen.densityPixels;
+      const dx = Math.floor(deltaXPx * density);
+      const dy = Math.floor(deltaYPx * density);
+      const minWidth = Math.floor(this.minWindowWidthVp * density);
+      const minHeight = Math.floor(this.minWindowHeightVp * density);
+      let width = this.resizeStartWidth;
+      let height = this.resizeStartHeight;
+      let x = this.resizeStartX;
+      if (this.resizeMode === 'left') {
+        width = Math.max(minWidth, Math.min(this.resizeStartX + this.resizeStartWidth,
+          this.resizeStartWidth - dx));
+        x = this.resizeStartX + this.resizeStartWidth - width;
+      } else if (this.resizeMode === 'right') {
+        width = Math.max(minWidth, Math.min(screen.width - this.resizeStartX,
+          this.resizeStartWidth + dx));
+      } else {
+        height = Math.max(minHeight, Math.min(screen.height - this.resizeStartY,
+          this.resizeStartHeight + dy));
+      }
+      this.pendingWindowWidth = width;
+      this.pendingWindowHeight = height;
+      this.pendingWindowX = x;
+      this.pendingWindowY = this.resizeStartY;
+      this.pendingWindowMove = this.resizeMode === 'left';
+      this.applyPendingWindowResize();
+    } catch (error) {
+      console.error("AppWindowContent: 获取屏幕尺寸失败:", JSON.stringify(error));
+    }
+  }
+
+  private async applyPendingWindowResize(): Promise<void> {
+    if (this.windowResizeInFlight || !this.currentWindow || this.pendingWindowWidth <= 0 || this.pendingWindowHeight <= 0) {
+      return;
+    }
+    this.windowResizeInFlight = true;
+    try {
+      while (this.currentWindow && this.pendingWindowWidth > 0 && this.pendingWindowHeight > 0) {
+        const width = this.pendingWindowWidth;
+        const height = this.pendingWindowHeight;
+        const x = this.pendingWindowX;
+        const y = this.pendingWindowY;
+        const move = this.pendingWindowMove;
+        this.pendingWindowWidth = 0;
+        this.pendingWindowHeight = 0;
+        await this.currentWindow.resize(width, height);
+        if (move) {
+          await this.currentWindow.moveWindowTo(x, y);
+        }
+      }
+    } catch (error) {
+      console.error("AppWindowContent: 调整窗口大小失败:", JSON.stringify(error));
+    } finally {
+      this.windowResizeInFlight = false;
+      if (this.pendingWindowWidth > 0 && this.pendingWindowHeight > 0) {
+        this.applyPendingWindowResize();
+      }
+    }
+  }
+
+  private async toggleFullscreen(): Promise<void> {
+    if (!this.currentWindow) {
+      return;
+    }
+    try {
+      const screen = this.getHostDisplayInfo();
+      const dockWidth = calculateDockSize(screen.width, screen.height, screen.densityPixels);
+      const availableWidth = Math.max(1, screen.width - dockWidth);
+      if (!this.isFullscreen) {
+        const rect = this.currentWindow.getWindowProperties().windowRect;
+        this.restoreWindowX = rect.left;
+        this.restoreWindowY = rect.top;
+        this.restoreWindowWidth = rect.width;
+        this.restoreWindowHeight = rect.height;
+        await this.currentWindow.moveWindowTo(dockWidth, 0);
+        await this.currentWindow.resize(availableWidth, screen.height);
+        this.isFullscreen = true;
+      } else {
+        await this.currentWindow.moveWindowTo(this.restoreWindowX, this.restoreWindowY);
+        await this.currentWindow.resize(this.restoreWindowWidth, this.restoreWindowHeight);
+        this.isFullscreen = false;
+      }
+      this.isMenuVisible = false;
+      await new Promise<void>((resolve: () => void) => setTimeout(resolve, 100));
+      await this.updateVirtualDisplaySize();
+    } catch (error) {
+      console.error("AppWindowContent: 切换全屏状态失败:", JSON.stringify(error));
+    }
+  }
+
+  private async updateVirtualDisplaySize(): Promise<void> {
+    if (!this.currentWindow) {
+      return;
+    }
+    const screenBounds = this.getHostDisplayInfo();
+    const dockWidth = calculateDockSize(screenBounds.width, screenBounds.height, screenBounds.densityPixels);
+    const availableWidth = Math.max(1, screenBounds.width - dockWidth);
+    const windowRect = this.currentWindow.getWindowProperties().windowRect;
+    this.isFullscreen = windowRect.left <= dockWidth && windowRect.top <= 0 &&
+      windowRect.width >= availableWidth && windowRect.height >= screenBounds.height;
+    if (this.displayId <= 0 || this.resizePending) {
+      return;
+    }
+    this.resizePending = true;
+    let nextDisplayId: number = 0;
+    let stage: string = '读取 Surface 尺寸';
+    try {
+      const surfaceId = this.xComponentController.getXComponentSurfaceId();
+      const surfaceRect = this.xComponentController.getXComponentSurfaceRect();
+      const nextSurfaceWidth = surfaceRect.surfaceWidth;
+      const nextSurfaceHeight = surfaceRect.surfaceHeight;
+      if (nextSurfaceWidth <= 0 || nextSurfaceHeight <= 0 ||
+        (nextSurfaceWidth === this.surfaceWidth && nextSurfaceHeight === this.surfaceHeight)) {
+        return;
+      }
+
+      const mainDisplay = display.getDefaultDisplaySync();
+      const isLandscape = mainDisplay.width > mainDisplay.height;
+      const nextVirtualHeight = isLandscape ? mainDisplay.width : mainDisplay.height;
+      const nextVirtualWidth = Math.floor(nextVirtualHeight * nextSurfaceWidth / nextSurfaceHeight);
+      const previousDisplayId = this.displayId;
+      let previousDisplayDestroyed: boolean = false;
+      const createVirtualScreen = async (): Promise<number> => {
+        return await display.createVirtualScreen({
+          name: `appWindow_${this.packageName}_${Date.now()}`,
+          width: nextVirtualWidth,
+          height: nextVirtualHeight,
+          density: mainDisplay.densityPixels,
+          surfaceId: surfaceId
+        });
+      };
+      stage = '创建新虚拟屏幕';
+      console.info(`AppWindowContent: 创建新虚拟屏幕，Surface=${nextSurfaceWidth}x${nextSurfaceHeight}, ` +
+        `display=${nextVirtualWidth}x${nextVirtualHeight}, oldDisplayId=${previousDisplayId}`);
+      try {
+        nextDisplayId = await createVirtualScreen();
+      } catch (createError) {
+        const errorText = JSON.stringify(createError);
+        console.error("AppWindowContent: 首次创建新虚拟屏幕失败:", errorText);
+        if (!errorText.includes('1400001')) {
+          console.error(`AppWindowContent: 阶段“${stage}”失败，Surface=${nextSurfaceWidth}x${nextSurfaceHeight}:`, errorText);
+          return;
+        }
+        stage = '释放旧虚拟屏幕后重试创建';
+        await display.destroyVirtualScreen(previousDisplayId);
+        previousDisplayDestroyed = true;
+        nextDisplayId = await createVirtualScreen();
+      }
+      stage = '设置新虚拟屏幕为独立显示';
+      await display.makeUnique(nextDisplayId);
+
+      const want: Want = {
+        bundleName: this.packageName,
+        action: "action.system.home",
+        entities: ["entity.system.home"]
+      };
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      stage = '在新虚拟屏幕启动应用';
+      await context.startAbility(want, { displayId: nextDisplayId });
+
+      this.surfaceWidth = nextSurfaceWidth;
+      this.surfaceHeight = nextSurfaceHeight;
+      this.virtualWidth = nextVirtualWidth;
+      this.virtualHeight = nextVirtualHeight;
+      this.scaleRatio = nextVirtualHeight / nextSurfaceHeight;
+      this.displayId = nextDisplayId;
+
+      if (!previousDisplayDestroyed) {
+        stage = '销毁旧虚拟屏幕';
+        try {
+          await display.destroyVirtualScreen(previousDisplayId);
+          console.info(`AppWindowContent: 旧虚拟屏幕 ${previousDisplayId} 已销毁`);
+        } catch (error) {
+          console.error(`AppWindowContent: 销毁旧虚拟屏幕 ${previousDisplayId} 失败:`, JSON.stringify(error));
+        }
+      }
+      console.info(`AppWindowContent: 应用已切换到新虚拟屏幕 ${nextVirtualWidth}x${nextVirtualHeight}`);
+    } catch (error) {
+      console.error(`AppWindowContent: 阶段“${stage}”失败，Surface=${this.surfaceWidth}x${this.surfaceHeight}:`, JSON.stringify(error));
+      if (nextDisplayId > 0 && nextDisplayId !== this.displayId) {
+        try {
+          await display.destroyVirtualScreen(nextDisplayId);
+          console.info(`AppWindowContent: 已清理未完成切换的新虚拟屏幕 ${nextDisplayId}`);
+        } catch (cleanupError) {
+          console.error(`AppWindowContent: 清理新虚拟屏幕 ${nextDisplayId} 失败:`, JSON.stringify(cleanupError));
+        }
+      }
+    } finally {
+      this.resizePending = false;
+    }
   }
 
   private async forwardTouchClick(xVp: number, yVp: number): Promise<void> {
@@ -90,6 +335,7 @@ struct AppWindowContent {
     if (this.windowName) {
       // 使用窗口名称获取对应的包名和窗口实例
       this.packageName = AppStorage.get<string>(`appWindow_packageName_${this.windowName}`) || "";
+      this.hostDisplayId = AppStorage.get<number>(`appWindow_hostDisplayId_${this.windowName}`) || 0;
       this.currentWindow = AppStorage.get<window.Window>(`appWindow_instance_${this.windowName}`) || null;
       console.log(`AppWindowContent: 窗口名: ${this.windowName}, 包名: ${this.packageName}`);
     } else {
@@ -238,20 +484,53 @@ struct AppWindowContent {
           const touch = event.touches[0];
           const x = touch.x;
           const y = touch.y;
+          const displayX = touch.displayX;
+          const displayY = touch.displayY;
 
           if (event.type === TouchType.Down) {
             this.touchStartX = x;
             this.touchStartY = y;
+            this.resizeStartDisplayX = displayX;
+            this.resizeStartDisplayY = displayY;
             this.touchStartTime = Date.now();
             this.swipeAnchorX = x;
             this.swipeAnchorY = y;
             this.swipeAnchorTime = this.touchStartTime;
             this.swipeTriggered = false;
+            this.resizeGestureActive = false;
+            this.resizeEdgeCandidate = '';
+            if (!this.isFullscreen && this.currentWindow) {
+              const density = this.getHostDisplayInfo().densityPixels;
+              const rect = this.currentWindow.getWindowProperties().windowRect;
+              const widthVp = rect.width / density;
+              const heightVp = rect.height / density;
+              const edgeBandVp = 24;
+              if (y >= heightVp - edgeBandVp) {
+                this.resizeEdgeCandidate = 'bottom';
+              } else if (x <= edgeBandVp) {
+                this.resizeEdgeCandidate = 'left';
+              } else if (x >= widthVp - edgeBandVp) {
+                this.resizeEdgeCandidate = 'right';
+              }
+              if (this.resizeEdgeCandidate) {
+                this.beginResize(this.resizeEdgeCandidate);
+              }
+            }
             console.log(`AppWindowContent: touch down (${x.toFixed(1)}, ${y.toFixed(1)})`);
             return;
           }
 
           if (event.type === TouchType.Move) {
+            const resizeDeltaX = displayX - this.resizeStartDisplayX;
+            const resizeDeltaY = displayY - this.resizeStartDisplayY;
+            const resizeDistance = Math.sqrt(resizeDeltaX * resizeDeltaX + resizeDeltaY * resizeDeltaY);
+            const resizeThresholdVp = this.touchMoveThreshold;
+            if (this.resizeGestureActive ||
+              (this.resizeEdgeCandidate !== '' && resizeDistance > resizeThresholdVp)) {
+              this.resizeGestureActive = true;
+              this.resizeCurrentWindow(resizeDeltaX, resizeDeltaY);
+              return;
+            }
             const now = Date.now();
             const deltaX = x - this.swipeAnchorX;
             const deltaY = y - this.swipeAnchorY;
@@ -272,6 +551,14 @@ struct AppWindowContent {
           }
 
           if (event.type === TouchType.Up) {
+            if (this.resizeGestureActive) {
+              this.resizeGestureActive = false;
+              this.resizeEdgeCandidate = '';
+              await new Promise<void>((resolve: () => void) => setTimeout(resolve, 100));
+              await this.updateVirtualDisplaySize();
+              return;
+            }
+            this.resizeEdgeCandidate = '';
             const duration = Date.now() - this.touchStartTime;
             const deltaX = x - this.touchStartX;
             const deltaY = y - this.touchStartY;
@@ -336,6 +623,9 @@ struct AppWindowContent {
                 console.log("AppWindowContent: 开始拖动");
               })
               .onActionUpdate((event: GestureEvent) => {
+                if (this.isFullscreen) {
+                  return;
+                }
                 if (this.currentWindow) {
                   let properties = this.currentWindow.getWindowProperties();
                   let newX = properties.windowRect.left + event.offsetX;
@@ -360,6 +650,14 @@ struct AppWindowContent {
 
       if (this.isMenuVisible) {
         Row({ space: 8 }) {
+          Image(this.isFullscreen ? $r('app.media.ic_restore') : $r('app.media.ic_fullscreen'))
+            .width(32)
+            .height(32)
+            .padding(4)
+            .backgroundColor('#FFFFFF')
+            .border({ width: 1, color: '#D9D9D9', radius: 6 })
+            .onClick(() => this.toggleFullscreen())
+
           Image($r('app.media.ic_close'))
             .width(32)
             .height(32)
