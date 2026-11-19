@@ -21,11 +21,11 @@ export struct FeedbackPage {
             Text('告诉我们你的想法')
               .fontSize(22)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#1C1B1B')
+              .fontColor($r('app.color.text_primary'))
               .width('100%')
             Text('每一条反馈都会帮助 Hi时刻变得更好')
               .fontSize(13)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
           }
           .width('100%')
@@ -35,7 +35,7 @@ export struct FeedbackPage {
             Text('反馈类型')
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#1C1B1B')
+              .fontColor($r('app.color.text_primary'))
               .width('100%')
 
             Row({ space: 8 }) {
@@ -48,14 +48,14 @@ export struct FeedbackPage {
           .width('100%')
           .padding(16)
           .borderRadius(20)
-          .backgroundColor(Color.White)
-          .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+          .backgroundColor($r('app.color.bg_card'))
+          .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
 
           Column({ space: 12 }) {
             Text('详细描述')
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#1C1B1B')
+              .fontColor($r('app.color.text_primary'))
               .width('100%')
 
             TextArea({ placeholder: '请描述你的建议或遇到的问题', text: this.description })
@@ -65,7 +65,7 @@ export struct FeedbackPage {
               .padding(14)
               .maxLength(300)
               .textAlign(TextAlign.Start)
-              .backgroundColor('#F7F8FA')
+              .backgroundColor($r('app.color.bg_input'))
               .borderRadius(12)
               .onChange((value: string) => {
                 this.description = value;
@@ -73,21 +73,21 @@ export struct FeedbackPage {
 
             Text(`${this.description.length}/300`)
               .fontSize(12)
-              .fontColor('#9A9EA8')
+              .fontColor($r('app.color.text_quaternary'))
               .width('100%')
               .textAlign(TextAlign.End)
           }
           .width('100%')
           .padding(16)
           .borderRadius(20)
-          .backgroundColor(Color.White)
-          .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+          .backgroundColor($r('app.color.bg_card'))
+          .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
 
           Column({ space: 12 }) {
             Text('联系方式（选填）')
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#1C1B1B')
+              .fontColor($r('app.color.text_primary'))
               .width('100%')
 
             TextInput({ placeholder: '方便我们回复你，例如微信号', text: this.contact })
@@ -95,7 +95,7 @@ export struct FeedbackPage {
               .width('100%')
               .fontSize(15)
               .padding({ left: 14, right: 14 })
-              .backgroundColor('#F7F8FA')
+              .backgroundColor($r('app.color.bg_input'))
               .borderRadius(12)
               .onChange((value: string) => {
                 this.contact = value;
@@ -104,16 +104,16 @@ export struct FeedbackPage {
           .width('100%')
           .padding(16)
           .borderRadius(20)
-          .backgroundColor(Color.White)
-          .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+          .backgroundColor($r('app.color.bg_card'))
+          .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
 
           Button(this.isSubmitting ? '提交中...' : '提交反馈')
             .width('100%')
             .height(48)
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
-            .fontColor(Color.White)
-            .backgroundColor('#007DFF')
+            .fontColor($r('app.color.text_on_accent'))
+            .backgroundColor($r('app.color.accent'))
             .borderRadius(24)
             .enabled(!this.isSubmitting)
             .onClick(() => {
@@ -122,7 +122,7 @@ export struct FeedbackPage {
 
           Text('暂不需要填写联系方式，我们也会认真阅读你的反馈。')
             .fontSize(12)
-            .fontColor('#9A9EA8')
+            .fontColor($r('app.color.text_quaternary'))
             .width('100%')
             .textAlign(TextAlign.Center)
         }
@@ -135,12 +135,12 @@ export struct FeedbackPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F6F7F9')
+    .backgroundColor($r('app.color.bg_page'))
     .bindSheet($$this.showGuide, this.FeedbackGuide(), {
       height: 430,
       dragBar: true,
       showClose: false,
-      maskColor: 'rgba(0, 0, 0, 0.45)'
+      maskColor: $r('app.color.mask_color')
     })
   }
 
@@ -163,7 +163,7 @@ export struct FeedbackPage {
       Text('意见反馈')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .margin({ left: 8 })
 
       Blank()
@@ -179,8 +179,8 @@ export struct FeedbackPage {
       .layoutWeight(1)
       .height(38)
       .fontSize(13)
-      .fontColor(this.feedbackType === type ? '#007DFF' : '#596170')
-      .backgroundColor(this.feedbackType === type ? '#EAF3FF' : '#F7F8FA')
+      .fontColor(this.feedbackType === type ? $r('app.color.accent') : $r('app.color.text_secondary'))
+      .backgroundColor(this.feedbackType === type ? $r('app.color.accent_soft') : $r('app.color.bg_input'))
       .borderRadius(19)
       .onClick(() => {
         this.feedbackType = type;
@@ -209,10 +209,10 @@ export struct FeedbackPage {
         Text('通过公众号提交反馈')
           .fontSize(22)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
         Text('复制内容后，在微信发送给公众号“Hi时刻”')
           .fontSize(13)
-          .fontColor('#7A7F8A')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
@@ -235,8 +235,8 @@ export struct FeedbackPage {
           .layoutWeight(1)
           .height(44)
           .fontSize(15)
-          .fontColor('#007DFF')
-          .backgroundColor('#EAF3FF')
+          .fontColor($r('app.color.accent'))
+          .backgroundColor($r('app.color.accent_soft'))
           .borderRadius(22)
           .onClick(() => {
             this.copyFeedbackContent();
@@ -245,8 +245,8 @@ export struct FeedbackPage {
           .layoutWeight(1)
           .height(44)
           .fontSize(15)
-          .fontColor(Color.White)
-          .backgroundColor('#007DFF')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.accent'))
           .borderRadius(22)
           .onClick(() => {
             this.showGuide = false;
@@ -258,7 +258,7 @@ export struct FeedbackPage {
     .height('100%')
     .padding({ left: 24, right: 24, top: 22, bottom: 30 })
     .justifyContent(FlexAlign.SpaceBetween)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.bg_sheet'))
   }
 
   @Builder
@@ -268,21 +268,21 @@ export struct FeedbackPage {
         Text(number)
           .fontSize(13)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor($r('app.color.text_on_accent'))
       }
       .width(28)
       .height(28)
       .borderRadius(14)
-      .backgroundColor('#007DFF')
+      .backgroundColor($r('app.color.accent'))
 
       Text(title)
         .fontSize(14)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .layoutWeight(1)
 
       Text('复制')
         .fontSize(13)
-        .fontColor('#007DFF')
+        .fontColor($r('app.color.accent'))
         .onClick(() => {
           onClick();
         })

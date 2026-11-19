@@ -26,7 +26,7 @@ export struct SystemSettingsPage {
             Text('调试连接')
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .margin({ left: 4 })
 
@@ -40,16 +40,16 @@ export struct SystemSettingsPage {
                 .width(36)
                 .height(36)
                 .borderRadius(18)
-                .backgroundColor('#EAF3FF')
+                .backgroundColor($r('app.color.accent_soft'))
 
                 Column({ space: 3 }) {
                   Text('无线调试端口')
                     .fontSize(16)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor('#1C1B1B')
+                    .fontColor($r('app.color.text_primary'))
                   Text('用于连接车机调试服务')
                     .fontSize(12)
-                    .fontColor('#7A7F8A')
+                    .fontColor($r('app.color.text_tertiary'))
                 }
                 .alignItems(HorizontalAlign.Start)
                 .margin({ left: 12 })
@@ -58,7 +58,7 @@ export struct SystemSettingsPage {
 
                 Text(this.debugPort ? this.debugPort : '未设置')
                   .fontSize(14)
-                  .fontColor(this.debugPort ? '#007DFF' : '#9A9EA8')
+                  .fontColor(this.debugPort ? $r('app.color.accent') : $r('app.color.text_quaternary'))
               }
               .width('100%')
 
@@ -70,21 +70,21 @@ export struct SystemSettingsPage {
                 .padding({ left: 14, right: 14 })
                 .fontSize(15)
                 .borderRadius(12)
-                .backgroundColor('#F7F8FA')
+                .backgroundColor($r('app.color.bg_input'))
                 .onChange((value: string) => {
                   this.debugPort = value;
                 })
 
               Text('修改端口后，重新连接车机才能生效。')
                 .fontSize(12)
-                .fontColor('#9A9EA8')
+                .fontColor($r('app.color.text_quaternary'))
                 .width('100%')
             }
             .width('100%')
             .padding(16)
             .borderRadius(20)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+            .backgroundColor($r('app.color.bg_card'))
+            .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
           }
           .width('100%')
 
@@ -92,7 +92,7 @@ export struct SystemSettingsPage {
             Text('应用管理')
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .margin({ left: 4 })
 
@@ -103,7 +103,7 @@ export struct SystemSettingsPage {
               })
               Divider()
                 .strokeWidth(1)
-                .color('#EEEAE8')
+                .color($r('app.color.divider'))
                 .margin({ left: 52 })
               this.ActionRow('清除应用缓存', '删除本地保存的应用列表', () => {
                 this.clearAppsCache();
@@ -112,8 +112,8 @@ export struct SystemSettingsPage {
             .width('100%')
             .padding({ left: 16, right: 16 })
             .borderRadius(20)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+            .backgroundColor($r('app.color.bg_card'))
+            .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
           }
           .width('100%')
 
@@ -121,7 +121,7 @@ export struct SystemSettingsPage {
             Text('其他')
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .margin({ left: 4 })
 
@@ -133,8 +133,8 @@ export struct SystemSettingsPage {
             .width('100%')
             .padding({ left: 16, right: 16 })
             .borderRadius(20)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+            .backgroundColor($r('app.color.bg_card'))
+            .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
           }
           .width('100%')
 
@@ -155,8 +155,8 @@ export struct SystemSettingsPage {
         .margin({ left: 16, right: 16, bottom: 16 })
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor(Color.White)
-        .backgroundColor('#007DFF')
+        .fontColor($r('app.color.text_on_accent'))
+        .backgroundColor($r('app.color.accent'))
         .borderRadius(24)
         .enabled(!this.isSaving)
         .onClick(() => {
@@ -165,7 +165,7 @@ export struct SystemSettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F6F7F9')
+    .backgroundColor($r('app.color.bg_page'))
   }
 
   @Builder
@@ -179,15 +179,15 @@ export struct SystemSettingsPage {
       .width(36)
       .height(36)
       .borderRadius(18)
-      .backgroundColor('#F6F3F2')
+      .backgroundColor($r('app.color.bg_icon'))
 
       Column({ space: 3 }) {
         Text(title)
           .fontSize(15)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
         Text(description)
           .fontSize(12)
-          .fontColor('#7A7F8A')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Start)
       .margin({ left: 12 })
@@ -195,7 +195,7 @@ export struct SystemSettingsPage {
       Blank()
 
       Toggle({ type: ToggleType.Switch, isOn: value })
-        .selectedColor('#007DFF')
+        .selectedColor($r('app.color.accent'))
         .onChange((isOn: boolean) => {
           onChange(isOn);
         })
@@ -215,15 +215,15 @@ export struct SystemSettingsPage {
       .width(36)
       .height(36)
       .borderRadius(18)
-      .backgroundColor('#F6F3F2')
+      .backgroundColor($r('app.color.bg_icon'))
 
       Column({ space: 3 }) {
         Text(title)
           .fontSize(15)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
         Text(description)
           .fontSize(12)
-          .fontColor('#7A7F8A')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Start)
       .margin({ left: 12 })
@@ -260,7 +260,7 @@ export struct SystemSettingsPage {
       Text('系统设置')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .margin({ left: 8 })
 
       Blank()

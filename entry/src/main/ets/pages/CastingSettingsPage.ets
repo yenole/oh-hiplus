@@ -29,7 +29,7 @@ export struct CastingSettingsPage {
             Text('投屏体验')
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .margin({ left: 4 })
 
@@ -39,14 +39,14 @@ export struct CastingSettingsPage {
               })
               Divider()
                 .strokeWidth(1)
-                .color('#EEEAE8')
+                .color($r('app.color.divider'))
                 .margin({ left: 52 })
               this.SwitchRow('保持屏幕常亮', '投屏期间避免手机自动锁屏', this.keepScreenAwake, (value: boolean) => {
                 this.keepScreenAwake = value;
               })
               Divider()
                 .strokeWidth(1)
-                .color('#EEEAE8')
+                .color($r('app.color.divider'))
                 .margin({ left: 52 })
               this.SwitchRow('显示操作提示', '首次使用时显示投屏操作说明', this.showTouchHint, (value: boolean) => {
                 this.showTouchHint = value;
@@ -55,8 +55,8 @@ export struct CastingSettingsPage {
             .width('100%')
             .padding({ left: 16, right: 16 })
             .borderRadius(20)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+            .backgroundColor($r('app.color.bg_card'))
+            .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
           }
           .width('100%')
 
@@ -64,7 +64,7 @@ export struct CastingSettingsPage {
             Text('使用说明')
               .fontSize(13)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#7A7F8A')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .margin({ left: 4 })
 
@@ -76,8 +76,8 @@ export struct CastingSettingsPage {
             .width('100%')
             .padding(16)
             .borderRadius(20)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+            .backgroundColor($r('app.color.bg_card'))
+            .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
           }
           .width('100%')
         }
@@ -95,8 +95,8 @@ export struct CastingSettingsPage {
         .margin({ left: 16, right: 16, bottom: 16 })
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor(Color.White)
-        .backgroundColor('#007DFF')
+        .fontColor($r('app.color.text_on_accent'))
+        .backgroundColor($r('app.color.accent'))
         .borderRadius(24)
         .enabled(!this.isSaving)
         .onClick(() => {
@@ -105,7 +105,7 @@ export struct CastingSettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F6F7F9')
+    .backgroundColor($r('app.color.bg_page'))
   }
 
   @Builder
@@ -127,7 +127,7 @@ export struct CastingSettingsPage {
       Text('投屏设置')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .margin({ left: 8 })
 
       Blank()
@@ -144,21 +144,21 @@ export struct CastingSettingsPage {
         Circle()
           .width(12)
           .height(12)
-          .fill('#25C281')
+          .fill($r('app.color.success_dot'))
       }
       .width(36)
       .height(36)
       .borderRadius(18)
-      .backgroundColor('#E8FAF2')
+      .backgroundColor($r('app.color.success_soft'))
 
       Column({ space: 4 }) {
         Text('车机连接状态')
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
         Text('已准备好投屏')
           .fontSize(12)
-          .fontColor('#25A875')
+          .fontColor($r('app.color.success'))
       }
       .alignItems(HorizontalAlign.Start)
       .margin({ left: 12 })
@@ -167,13 +167,13 @@ export struct CastingSettingsPage {
 
       Text('正常')
         .fontSize(14)
-        .fontColor('#25A875')
+        .fontColor($r('app.color.success'))
     }
     .width('100%')
     .padding(16)
     .borderRadius(20)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.10)', offsetX: 0, offsetY: 8 })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 20, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
   }
 
   @Builder
@@ -187,15 +187,15 @@ export struct CastingSettingsPage {
       .width(36)
       .height(36)
       .borderRadius(18)
-      .backgroundColor('#F6F3F2')
+      .backgroundColor($r('app.color.bg_icon'))
 
       Column({ space: 3 }) {
         Text(title)
           .fontSize(15)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
         Text(description)
           .fontSize(12)
-          .fontColor('#7A7F8A')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Start)
       .margin({ left: 12 })
@@ -203,7 +203,7 @@ export struct CastingSettingsPage {
       Blank()
 
       Toggle({ type: ToggleType.Switch, isOn: value })
-        .selectedColor('#007DFF')
+        .selectedColor($r('app.color.accent'))
         .onChange((isOn: boolean) => {
           onChange(isOn);
         })
@@ -219,16 +219,16 @@ export struct CastingSettingsPage {
         Text(number)
           .fontSize(12)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Color.White)
+          .fontColor($r('app.color.text_on_accent'))
       }
       .width(26)
       .height(26)
       .borderRadius(13)
-      .backgroundColor('#007DFF')
+      .backgroundColor($r('app.color.accent'))
 
       Text(text)
         .fontSize(13)
-        .fontColor('#596170')
+        .fontColor($r('app.color.text_secondary'))
         .layoutWeight(1)
     }
     .width('100%')

@@ -9,12 +9,12 @@ export struct PortInputDialog {
       Text('设置无线调试端口')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
 
       Text('请输入无线调试端口号（例如：5555）')
         .fontSize(14)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .width('100%')
 
       TextInput({ placeholder: '请输入端口号', text: this.inputPort })
@@ -26,13 +26,13 @@ export struct PortInputDialog {
         .width('100%')
         .height(48)
         .borderRadius(8)
-        .backgroundColor('#F5F5F5')
+        .backgroundColor($r('app.color.bg_fill'))
 
       Row({ space: 12 }) {
         Button('取消')
           .fontSize(16)
-          .fontColor('#666666')
-          .backgroundColor('#F5F5F5')
+          .fontColor($r('app.color.text_secondary'))
+          .backgroundColor($r('app.color.bg_fill'))
           .width('48%')
           .height(44)
           .borderRadius(8)
@@ -42,8 +42,8 @@ export struct PortInputDialog {
 
         Button('确定')
           .fontSize(16)
-          .fontColor(Color.White)
-          .backgroundColor('#007DFF')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.accent'))
           .width('48%')
           .height(44)
           .borderRadius(8)
@@ -60,7 +60,7 @@ export struct PortInputDialog {
     .padding(24)
     .margin({ left: 24, right: 24 })
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.bg_card'))
     .borderRadius(16)
   }
 }
