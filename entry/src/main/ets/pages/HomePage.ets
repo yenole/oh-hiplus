@@ -36,6 +36,7 @@ struct HomePage {
     }
     .height('100%')
     .width('100%')
+    .backgroundColor($r('app.color.bg_page'))
   }
 
   @Builder
@@ -61,7 +62,7 @@ struct HomePage {
       Text(this.currentTitle())
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
 
       Blank()
 
@@ -96,16 +97,16 @@ struct HomePage {
         .width(236)
         .height(32)
         .borderRadius(16)
-        .backgroundColor('rgba(0, 125, 255, 0.16)')
-        .shadow({ radius: 36, color: 'rgba(0, 125, 255, 0.28)', offsetX: 0, offsetY: 0 })
+        .backgroundColor($r('app.color.nav_glow_bg'))
+        .shadow({ radius: 36, color: $r('app.color.nav_glow_shadow'), offsetX: 0, offsetY: 0 })
         .position({ x: 38, y: 28 })
 
       Row()
         .width(178)
         .height(24)
         .borderRadius(12)
-        .backgroundColor('rgba(255, 255, 255, 0.38)')
-        .shadow({ radius: 24, color: 'rgba(255, 255, 255, 0.70)', offsetX: 0, offsetY: 0 })
+        .backgroundColor($r('app.color.nav_glass'))
+        .shadow({ radius: 24, color: $r('app.color.nav_glass_shadow'), offsetX: 0, offsetY: 0 })
         .position({ x: 66, y: 12 })
 
       Row() {
@@ -117,9 +118,9 @@ struct HomePage {
       .width(292)
       .padding({ left: 8, right: 8 })
       .borderRadius(30)
-      .backgroundColor('rgba(248, 250, 255, 0.78)')
-      .border({ width: 1, color: 'rgba(255, 255, 255, 0.78)' })
-      .shadow({ radius: 34, color: 'rgba(33, 43, 64, 0.16)', offsetX: 0, offsetY: 10 })
+      .backgroundColor($r('app.color.nav_bg'))
+      .border({ width: 1, color: $r('app.color.nav_border') })
+      .shadow({ radius: 34, color: $r('app.color.nav_shadow'), offsetX: 0, offsetY: 10 })
     }
     .width(312)
     .height(80)
@@ -135,8 +136,8 @@ struct HomePage {
           .width(72)
           .height(44)
           .borderRadius(22)
-          .backgroundColor('rgba(0, 125, 255, 0.12)')
-          .shadow({ radius: 22, color: 'rgba(0, 125, 255, 0.30)', offsetX: 0, offsetY: 0 })
+          .backgroundColor($r('app.color.accent_soft'))
+          .shadow({ radius: 22, color: $r('app.color.accent_glow'), offsetX: 0, offsetY: 0 })
       }
 
       Column({ space: 2 }) {
@@ -147,7 +148,7 @@ struct HomePage {
         Text(label)
           .fontSize(12)
           .fontWeight(this.selectedTab === index ? FontWeight.Bold : FontWeight.Medium)
-          .fontColor(this.selectedTab === index ? '#007DFF' : '#414754')
+          .fontColor(this.selectedTab === index ? $r('app.color.accent') : $r('app.color.text_secondary'))
       }
       .justifyContent(FlexAlign.Center)
     }

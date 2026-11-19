@@ -65,9 +65,9 @@ export struct HomeProfileTab {
         }
         .width('100%')
         .borderRadius(24)
-        .backgroundColor(Color.White)
-        .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-        .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+        .backgroundColor($r('app.color.bg_card'))
+        .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+        .border({ width: 1, color: $r('app.color.bg_card_border') })
       }
       .width('100%')
       .padding({ left: 16, right: 16 })
@@ -95,8 +95,8 @@ export struct HomeProfileTab {
             .width(96)
             .height(96)
             .borderRadius(48)
-            .border({ width: 4, color: Color.White })
-            .shadow({ radius: 16, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 6 })
+            .border({ width: 4, color: $r('app.color.bg_card') })
+            .shadow({ radius: 16, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 6 })
             .onClick(() => {
               this.handleAvatarClick();
             })
@@ -106,17 +106,17 @@ export struct HomeProfileTab {
             Text(this.avatar)
               .fontSize(36)
               .fontWeight(FontWeight.Bold)
-              .fontColor(Color.White)
+              .fontColor($r('app.color.text_on_accent'))
           }
           .width(96)
           .height(96)
           .borderRadius(48)
           .linearGradient({
             angle: 135,
-            colors: [['#007DFF', 0.0], ['#8BB8FF', 1.0]]
+            colors: [[$r('app.color.accent'), 0.0], [$r('app.color.accent_light'), 1.0]]
           })
-          .border({ width: 4, color: Color.White })
-          .shadow({ radius: 16, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 6 })
+          .border({ width: 4, color: $r('app.color.bg_card') })
+          .shadow({ radius: 16, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 6 })
           .onClick(() => {
             this.handleAvatarClick();
           })
@@ -130,8 +130,8 @@ export struct HomeProfileTab {
         .width(24)
         .height(24)
         .borderRadius(12)
-        .backgroundColor('#007DFF')
-        .border({ width: 2, color: Color.White })
+        .backgroundColor($r('app.color.accent'))
+        .border({ width: 2, color: $r('app.color.bg_card') })
       }
       .width(104)
       .height(104)
@@ -140,16 +140,16 @@ export struct HomeProfileTab {
         Text(this.nickname)
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
 
         if (this.userInfo && this.userInfo.member) {
           Text(this.userInfo.member)
             .fontSize(10)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#007DFF')
+            .fontColor($r('app.color.accent'))
             .padding({ left: 12, right: 12, top: 3, bottom: 3 })
             .borderRadius(10)
-            .backgroundColor('rgba(0, 125, 255, 0.10)')
+            .backgroundColor($r('app.color.accent_soft'))
         }
       }
       .alignItems(HorizontalAlign.Center)
@@ -165,19 +165,19 @@ export struct HomeProfileTab {
       Text(value)
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
 
       Text(label)
         .fontSize(12)
-        .fontColor('#414754')
+        .fontColor($r('app.color.text_secondary'))
     }
     .justifyContent(FlexAlign.Center)
     .width('100%')
     .height(72)
     .borderRadius(24)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+    .border({ width: 1, color: $r('app.color.bg_card_border') })
   }
 
   @Builder
@@ -191,12 +191,12 @@ export struct HomeProfileTab {
       .width(28)
       .height(28)
       .borderRadius(14)
-      .backgroundColor('#F6F3F2')
+      .backgroundColor($r('app.color.bg_icon'))
 
       Text(label)
         .fontSize(14)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
 
       Blank()
 
@@ -218,7 +218,7 @@ export struct HomeProfileTab {
   private MenuDivider() {
     Divider()
       .strokeWidth(1)
-      .color('#EEEAE8')
+      .color($r('app.color.divider'))
       .margin({ left: 56, right: 16 })
   }
 
@@ -230,16 +230,16 @@ export struct HomeProfileTab {
           Text(this.userInfo ? '退出登录' : '授权登录')
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#1C1B1B')
+            .fontColor($r('app.color.text_primary'))
 
           if (!this.userInfo) {
             Text('点击复制授权码，发送至公众号：Hi时刻')
               .fontSize(14)
-              .fontColor('#414754')
+              .fontColor($r('app.color.text_secondary'))
           } else {
             Text('确认退出当前账号？')
               .fontSize(14)
-              .fontColor('#414754')
+              .fontColor($r('app.color.text_secondary'))
           }
         }
         .alignItems(HorizontalAlign.Center)
@@ -250,11 +250,11 @@ export struct HomeProfileTab {
           Text(this.authCode)
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#1C1B1B')
+            .fontColor($r('app.color.text_primary'))
             .padding(16)
             .width('100%')
             .borderRadius(12)
-            .backgroundColor('#F6F3F2')
+            .backgroundColor($r('app.color.bg_icon'))
             .textAlign(TextAlign.Center)
             .onClick(() => {
               this.copyToClipboard(this.authCode);
@@ -270,7 +270,7 @@ export struct HomeProfileTab {
           .height(48)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-          .backgroundColor('#FF3B30')
+          .backgroundColor($r('app.color.danger'))
           .borderRadius(24)
           .onClick(() => {
             this.handleLogout();
@@ -281,7 +281,7 @@ export struct HomeProfileTab {
           .height(48)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-          .backgroundColor('#007DFF')
+          .backgroundColor($r('app.color.accent'))
           .borderRadius(24)
           .enabled(!this.isLoading && !!this.authCode)
           .onClick(() => {

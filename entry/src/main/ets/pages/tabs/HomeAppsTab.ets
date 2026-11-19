@@ -175,11 +175,11 @@ export struct HomeAppsTab {
         LoadingProgress()
           .width(60)
           .height(60)
-          .color('#007DFF')
+          .color($r('app.color.accent'))
         
         Text('加载中...')
           .fontSize(14)
-          .fontColor('#717786')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 12 })
       }
       .width('100%')
@@ -211,7 +211,7 @@ export struct HomeAppsTab {
       .height('100%')
       .bindSheet($$this.showCategorySheet, this.CategoryDetailSheet(), {
         height: '70%',
-        backgroundColor: Color.White,
+        backgroundColor: $r('app.color.bg_sheet'),
         dragBar: false,
         showClose: false
       })
@@ -225,7 +225,7 @@ export struct HomeAppsTab {
       Text(this.selectedCategory)
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
         .height(60)
         .textAlign(TextAlign.Center)
@@ -262,13 +262,13 @@ export struct HomeAppsTab {
         Text(app.name)
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1C1B1B')
+          .fontColor($r('app.color.text_primary'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
         Text(app.package)
           .fontSize(12)
-          .fontColor('#717786')
+          .fontColor($r('app.color.text_tertiary'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
@@ -278,7 +278,7 @@ export struct HomeAppsTab {
     .width('100%')
     .padding(12)
     .borderRadius(12)
-    .backgroundColor('#F5F5F5')
+    .backgroundColor($r('app.color.bg_fill'))
   }
 
   @Builder
@@ -302,9 +302,9 @@ export struct HomeAppsTab {
     .width('100%')
     .padding(16)
     .borderRadius(24)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+    .border({ width: 1, color: $r('app.color.bg_card_border') })
   }
 
   @Builder
@@ -327,9 +327,9 @@ export struct HomeAppsTab {
     .width('100%')
     .padding(16)
     .borderRadius(24)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+    .border({ width: 1, color: $r('app.color.bg_card_border') })
   }
 
   @Builder
@@ -353,9 +353,9 @@ export struct HomeAppsTab {
     .width('100%')
     .padding(16)
     .borderRadius(24)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+    .border({ width: 1, color: $r('app.color.bg_card_border') })
   }
 
   @Builder
@@ -373,9 +373,9 @@ export struct HomeAppsTab {
     .width('100%')
     .padding(16)
     .borderRadius(24)
-    .backgroundColor(Color.White)
-    .shadow({ radius: 24, color: 'rgba(0, 0, 0, 0.12)', offsetX: 0, offsetY: 8 })
-    .border({ width: 1, color: 'rgba(255, 255, 255, 0.65)' })
+    .backgroundColor($r('app.color.bg_card'))
+    .shadow({ radius: 24, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 8 })
+    .border({ width: 1, color: $r('app.color.bg_card_border') })
   }
 
   @Builder
@@ -388,7 +388,7 @@ export struct HomeAppsTab {
       Text(title)
         .fontSize(15)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
     }
     .width('100%')
   }
@@ -404,7 +404,7 @@ export struct HomeAppsTab {
       Text(label)
         .fontSize(13)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .layoutWeight(1)
@@ -420,18 +420,18 @@ export struct HomeAppsTab {
       Text(category)
         .fontSize(15)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#1C1B1B')
+        .fontColor($r('app.color.text_primary'))
 
       Blank()
 
       Text(`${count}`)
         .fontSize(14)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#717786')
+        .fontColor($r('app.color.text_tertiary'))
 
       Text('›')
         .fontSize(20)
-        .fontColor('#717786')
+        .fontColor($r('app.color.text_tertiary'))
     }
     .width('100%')
     .height(44)
