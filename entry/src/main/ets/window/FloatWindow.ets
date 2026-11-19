@@ -33,6 +33,9 @@ class FloatWindowController {
       }
       AppStorage.setOrCreate(STORAGE_FLOAT_WINDOW, win);
       AppStorage.setOrCreate(STORAGE_DISPLAY_ID, displayId);
+      win.setWindowKeepScreenOn(true).catch((error: Error) => {
+        console.error("FloatWindowController: 设置悬浮图标窗口屏幕常亮失败:", JSON.stringify(error));
+      });
       FloatWindowController.applyIconLayout(win, displayId);
       win.loadContent("window/FloatWindow", (loadErr) => {
         if (loadErr.code != 0) {
