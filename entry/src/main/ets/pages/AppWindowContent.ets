@@ -589,18 +589,18 @@ struct AppWindowContent {
           .height('100%')
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
-          .backgroundColor('#FFFFFF')
+          .backgroundColor($r('app.color.bg_card'))
           .position({ x: 0, y: 0 })
         }
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#F5F5F5')
+      .backgroundColor($r('app.color.bg_fill'))
       .borderRadius(12)
       .clip(true)
       .shadow({
         radius: 20,
-        color: 'rgba(0, 0, 0, 0.2)',
+        color: $r('app.color.shadow_float'),
         offsetX: 0,
         offsetY: 4
       })
@@ -612,7 +612,7 @@ struct AppWindowContent {
           .width(60)
           .height(8)
           .borderRadius(4)
-          .backgroundColor('#BBBBBB')
+          .backgroundColor($r('app.color.drag_handle'))
           .onClick(() => {
             this.isMenuVisible = !this.isMenuVisible;
             console.log(`AppWindowContent: ${this.isMenuVisible ? '打开' : '关闭'}头部菜单`);
@@ -654,25 +654,26 @@ struct AppWindowContent {
             .width(32)
             .height(32)
             .padding(4)
-            .backgroundColor('#FFFFFF')
-            .border({ width: 1, color: '#D9D9D9', radius: 6 })
+            .backgroundColor($r('app.color.bg_card'))
+            .border({ width: 1, color: $r('app.color.border_control'), radius: 6 })
             .onClick(() => this.toggleFullscreen())
 
           Image($r('app.media.ic_close'))
             .width(32)
             .height(32)
             .padding(4)
-            .backgroundColor('#FFFFFF')
-            .border({ width: 1, color: '#D9D9D9', radius: 6 })
+            .backgroundColor($r('app.color.bg_card'))
+            .border({ width: 1, color: $r('app.color.border_control'), radius: 6 })
             .onClick(() => this.closeAppWindow())
         }
         .width('100%')
         .justifyContent(FlexAlign.Center)
-        .backgroundColor('#00000000')
+        .backgroundColor(Color.Transparent)
         .position({ x: 0, y: 30 })
       }
     }
     .width('100%')
     .height('100%')
+    .backgroundColor($r('app.color.bg_page'))
   }
 }

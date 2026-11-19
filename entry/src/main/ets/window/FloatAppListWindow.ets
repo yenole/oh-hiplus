@@ -197,8 +197,8 @@ struct FloatAppListWindow {
     Column() {
       if (this.isLoading) {
         Column() {
-          LoadingProgress().width(40).height(40).color('#007DFF')
-          Text('加载中...').fontSize(12).fontColor('#717786').margin({ top: 8 })
+          LoadingProgress().width(40).height(40).color($r('app.color.accent'))
+          Text('加载中...').fontSize(12).fontColor($r('app.color.text_tertiary')).margin({ top: 8 })
         }
         .width('100%').layoutWeight(1).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
       } else {
@@ -208,7 +208,7 @@ struct FloatAppListWindow {
               GridItem() {
                 Column({ space: 6 }) {
                   Image(app.icon).width(48).height(48).borderRadius(24)
-                  Text(app.name).fontSize(12).fontColor('#1C1B1B').maxLines(1)
+                  Text(app.name).fontSize(12).fontColor($r('app.color.text_primary')).maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis }).width('100%').textAlign(TextAlign.Center)
                 }
                 .width(100).padding(8).onClick(() => this.launchApp(app))
@@ -223,7 +223,7 @@ struct FloatAppListWindow {
         .padding({ left: 16, right: 16, top: 12, bottom: 12 })
       }
     }
-    .width('100%').height('100%').backgroundColor(Color.White).borderRadius(20)
-    .shadow({ radius: 20, color: 'rgba(0, 0, 0, 0.3)', offsetX: 0, offsetY: 4 })
+    .width('100%').height('100%').backgroundColor($r('app.color.bg_sheet')).borderRadius(20)
+    .shadow({ radius: 20, color: $r('app.color.shadow_float'), offsetX: 0, offsetY: 4 })
   }
 }
