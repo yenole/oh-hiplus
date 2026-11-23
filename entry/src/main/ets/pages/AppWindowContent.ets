@@ -27,6 +27,7 @@ struct AppWindowContent {
   @State surfaceHeight: number = 0;
   @State scaleRatio: number = 1; // 统一的缩放比例
   private currentWindow: window.Window | null = null;
+  private dragHandleMoved: boolean = false;
   private touchStartX: number = 0;
   private touchStartY: number = 0;
   private resizeStartDisplayX: number = 0;
@@ -614,28 +615,32 @@ struct AppWindowContent {
           .borderRadius(4)
           .backgroundColor($r('app.color.drag_handle'))
           .onClick(() => {
+            if (this.dragHandleMoved) {
+              this.dragHandleMoved = false;
+              return;
+            }
             this.isMenuVisible = !this.isMenuVisible;
             console.log(`AppWindowContent: ${this.isMenuVisible ? '打开' : '关闭'}头部菜单`);
           })
           .gesture(
             PanGesture(this.panOption)
               .onActionStart((event: GestureEvent) => {
+                this.dragHandleMoved = false;
                 console.log("AppWindowContent: 开始拖动");
               })
               .onActionUpdate((event: GestureEvent) => {
-                if (this.isFullscreen) {
+                if (Math.abs(event.offsetX) > 1 || Math.abs(event.offsetY) > 1) {
+                  this.dragHandleMoved = true;
+                }
+                if (this.isFullscreen || !this.currentWindow) {
                   return;
                 }
-                if (this.currentWindow) {
-                  let properties = this.currentWindow.getWindowProperties();
-                  let newX = properties.windowRect.left + event.offsetX;
-                  let newY = properties.windowRect.top + event.offsetY;
-                  this.currentWindow.moveWindowTo(newX, newY, (err) => {
-                    if (err.code != 0) {
-                      console.log("AppWindowContent: 移动窗口失败:", JSON.stringify(err));
-                    }
-                  });
-                }
+                const rect = this.currentWindow.getWindowProperties().windowRect;
+                this.currentWindow.moveWindowTo(rect.left + event.offsetX, rect.top + event.offsetY, (err) => {
+                  if (err.code != 0) {
+                    console.log("AppWindowContent: 移动窗口失败:", JSON.stringify(err));
+                  }
+                });
               })
               .onActionEnd((event: GestureEvent) => {
                 console.log("AppWindowContent: 拖动结束");
